@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Minimalista - Soluciones Innovadoras</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@latest/font/Lucide.css">
+    <style>
+        /* Define the Lucide Icons font family */
+        @font-face {
+            font-family: 'LucideIcons';
+            /* Use CDN URL for Lucide font */
+            src: url('https://cdn.jsdelivr.net/npm/lucide-static@latest/font/Lucide.ttf') format('truetype');
+        }
+        /* Apply the font family to elements using Lucide icons */
+        .lucide {
+            font-family: 'LucideIcons';
+            font-style: normal;
+            font-weight: normal;
+            font-variant: normal;
+            text-rendering: auto;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            display: inline-block; /* Ensure icons behave like inline elements */
+        }
+
+        /* --- General Styles --- */
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark background */
+            color: #e5e7eb; /* Light text */
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* --- Custom Color Palette --- */
+        .bg-electric-blue { background-color: #2563eb; }
+        .text-electric-blue { color: #3b82f6; }
+        .border-electric-blue { border-color: #3b82f6; }
+        .hover\:bg-electric-blue-dark:hover { background-color: #1d4ed8; }
+
+        .bg-accent-purple { background-color: #7c3aed; }
+        .text-accent-purple { color: #9333ea; }
+        .border-accent-purple { border-color: #9333ea; }
+        .hover\:bg-accent-purple-dark:hover { background-color: #6d28d9; }
+
+        /* --- Button Styles --- */
+        .btn {
+            @apply inline-block px-6 py-3 rounded-lg font-semibold transition duration-300 ease-in-out shadow-md;
+        }
+        .btn-primary {
+            @apply bg-electric-blue text-white hover:bg-electric-blue-dark transform hover:-translate-y-0.5;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3); /* Neon glow effect */
+        }
+        .btn-secondary {
+            @apply bg-transparent border-2 border-accent-purple text-accent-purple hover:bg-accent-purple hover:text-white transform hover:-translate-y-0.5;
+        }
+
+        /* --- Card Styles --- */
+        .info-card {
+            @apply bg-gray-800 p-6 rounded-xl shadow-lg transition-all duration-300 ease-in-out hover:shadow-purple-500/30 hover:border-purple-500 border border-transparent flex flex-col items-center text-center; /* Center content */
+            /* Optional: Set a max-width for cards if needed */
+            /* max-width: 350px; */
+        }
+        /* Style for the icon within the card */
+        .info-card .lucide {
+            @apply text-accent-purple text-4xl mb-4; /* Icon color, size, and margin */
+        }
+
+        /* --- Fixed Navigation --- */
+        .fixed-nav {
+            @apply fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-sm shadow-lg;
+        }
+
+        /* --- Scroll Animation Styles --- */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition: opacity 0.6s cubic-bezier(0.645, 0.045, 0.355, 1),
+                        transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+            will-change: opacity, transform; /* Performance optimization */
+        }
+        .scroll-reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Delay classes for staggered animations */
+        .scroll-reveal.delay-100 { transition-delay: 0.1s; }
+        .scroll-reveal.delay-200 { transition-delay: 0.2s; }
+        .scroll-reveal.delay-300 { transition-delay: 0.3s; }
+        .scroll-reveal.delay-400 { transition-delay: 0.4s; }
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="fixed-nav">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-white">
+                Marcos<span class="text-electric-blue">Toselli</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#hero" class="text-gray-300 hover:text-electric-blue transition duration-200">Inicio</a>
+                <a href="#features" class="text-gray-300 hover:text-electric-blue transition duration-200">Características</a>
+                <a href="#testimonials" class="text-gray-300 hover:text-electric-blue transition duration-200">Testimonios</a>
+                <a href="#cta" class="text-gray-300 hover:text-electric-blue transition duration-200">Contacto</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-300 hover:text-electric-blue focus:outline-none">
+                 <i class="lucide">menu</i>
+            </button>
+            <div id="mobile-menu" class="hidden absolute top-full left-0 w-full bg-gray-900 md:hidden">
+                 <div class="flex flex-col items-center space-y-4 py-4">
+                     <a href="#hero" class="text-gray-300 hover:text-electric-blue transition duration-200">Inicio</a>
+                     <a href="#features" class="text-gray-300 hover:text-electric-blue transition duration-200">Características</a>
+                     <a href="#testimonials" class="text-gray-300 hover:text-electric-blue transition duration-200">Testimonios</a>
+                     <a href="#cta" class="text-gray-300 hover:text-electric-blue transition duration-200">Contacto</a>
+                 </div>
+             </div>
+        </nav>
+    </header>
+
+    <main class="pt-20">
+        <section id="hero" class="container mx-auto px-6 py-24 text-center flex flex-col items-center">
+            <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4 text-white">
+                Innovación <span class="text-electric-blue">Digital</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl">
+                Transformando ideas complejas en soluciones tecnológicas elegantes y eficientes que impulsan tu negocio.
+            </p>
+            <a href="#features" class="btn btn-primary">Descubre Más</a>
+            <img src="https://lh3.googleusercontent.com/fife/ALs6j_GegWDqcYSVv0Xa6hCTcTm2SNLPYqJClwnlhJnmnvk7tbwBfhpQBsd8v91OMMB6q0U5i9hoYaMRg7-oqkIEjS_nksgu5oRTMUDHWZuIKfry52mGCC8URAFTC5kziGlZuTClsQ9o44LFxDbAUAfxpl6h1beK6jD13lMk3XMIqm8ic5rXfGg849lyJbXGdelC1n9s7Jn_Cu4bFBFj770AQzggVPC-JRywgBxIWr9Rq-pKc86bBPfmpJEMCgTQvxmLc6YYdkGGNxt3UFZRRVTsL1eAxuy2WjmFxnSM7IUtz5w8r4NTMRrb0H03eQwS3C2V7WmD6SkIhgPDfAiw5kiIyZHzl0R8G-KU2kJi18OF2_E8Ia9ZXecYjKkol2iFbcy-l_LZWASWaBSHSOeSSLLi2sh-VvkMV8te5_FMMSN6aB3154AwOvw4r4Faqb-i-DXMTzrAmc1hqhJBXG-78dTduBvdc7Q6qEKZHrWbQ2VoLCopdXNIoVmC77l2wwfpJnfF_VFW3XGKpIFeNW4fVxraZr6YPsksPvgIKsT2pKaYZ69bA4JoO7C42AvpAdpnDx_RHdMkBKpBH6z2BibLghIioA1P3C3hPGPVbtBOeQGV_3ewD_GI10E2fAOLuR1vlzlUMJ0Fxqe2GNFeFzIHLbQ001uF1d34-3-_X9hTCDyr0Fgo8B3qTbQ-kuOvZxtuJnxeLZIkttN3T8GnsQIn8z5r1qkfqb2GrpRP_ALP_g_3XgQivI8cgbaZx2cSnpnfsXtIDl8stHn5bEqvBKkqKdtFhDL8iix3-5npt_Cd3yT8sHO1FQ9guEMjGm2iwN6pEWZjPZCHrNKNo3HE-WdiXW-FwjXLlvflGLn3_v12C8TZmEuUUywxn8miKEIFotqHZN5qWRG-kOqxbWbDPrbfTyUK9bRbCuqwvWBpdlmtveTThkGh4z8E3YvnIndV4w7m7hmb1VsnhC96OsB1feAF1IvqWJYz_Dvkw4XsqDw0lIEtGFd-ahvJFtPt2b0qmOC1MmGnODyIwYMxyNUObMXSZnQv6Gt3oiWcStuUd6iY0N2ZqJN8xk89C6jU59a3ERtafg4Y-oPct-aDPoWis1hafk7gBT8tx8zb6Mv8dzk5jIQAQ9ATq2snKpvK_zpDNeL8ILMV6lYdNlZiBsDR5cqY9E1VJC1yZ7VPtoHlzXW3_K4-ZFWYJohuZV8XFjLr8X-qiLn5Elb3L3BsTE5QF9tC0KeO7vLRfoRwZWvoFP-47DWmkGk89fsvWDrDEybCazh3GHYOpJ26QtrOEkvHFKhaVbgiqd7M3jxvrFgTcBiQSlxYN2zc5j-4MZ2zCF3c0gY_oQfCZ5grW0NY6_g7KRZEiLNCIxuy4sHXD1mBgNpA_iP2C7Fis_snLODH3r0Xd2LKgEOU8hN8mhwh3D5RO-_XOGFNHg0MCAP3qxruKbIQe27gASe2BmlJJwQVfJMIZ2ZOOfeqbPi5A-cNTNgMYZvpWqkvgKkPYmw3z5FkzcFhANozjREV1C7JFSUixPeZjUHoxq-YA3D8-aaU8nItykGR1GUhvrOpAsFZE3x1dQXzBkXRmdQG48-wOYiYUJJebncqhZpMFWX54bEbuI2S92QqxbCB5A=w785-h915"
+                 alt="Ilustración isométrica abstracta representando tecnología"
+                 class="mt-12 rounded-lg shadow-xl w-full max-w-3xl"
+                 onerror="this.src='https://placehold.co/800x400/111827/cccccc?text=Error+al+cargar+imagen'">
+        </section>
+
+        <section id="features" class="py-20 bg-gray-800/50 overflow-hidden">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white scroll-reveal">Soluciones <span class="text-accent-purple">Inteligentes</span></h2>
+                <p class="text-gray-400 mb-12 max-w-xl mx-auto scroll-reveal delay-100">Desde desarrollo a medida hasta consultoría estratégica, te ofrecemos las herramientas para triunfar.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <div class="info-card scroll-reveal delay-200">
+                        <i class="lucide">search</i>
+                        <h3 class="text-xl font-semibold mb-3 text-white">Deep research</h3>
+                        <p class="text-gray-400">Usando las ultimas herramientas de IA se generan investigaciones de mercado de tipo desk research</p>
+                    </div>
+                    <div class="info-card scroll-reveal delay-300">
+                         <i class="lucide">workflow</i>
+                         <h3 class="text-xl font-semibold mb-3 text-white">Optimizacion</h3>
+                        <p class="text-gray-400">Se analizan los diferentes procesos dentro de la organizacion y se aplican flujos de mejora.</p>
+                    </div>
+                    </div>
+            </div>
+        </section>
+
+        <section id="testimonials" class="py-20 overflow-hidden">
+             <div class="container mx-auto px-6 text-center">
+                 <h2 class="text-3xl md:text-4xl font-bold mb-12 text-white scroll-reveal">Lo que <span class="text-electric-blue">Dicen</span> Nuestros Clientes</h2>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-electric-blue scroll-reveal delay-100">
+                         <p class="text-gray-400 italic mb-4">"Su enfoque minimalista y eficiente nos permitió lanzar nuestro producto en tiempo récord. ¡Increíble profesionalismo!"</p>
+                         <p class="font-semibold text-white">- Cliente Satisfecho 1</p>
+                         <p class="text-sm text-accent-purple">CEO, Startup Innovadora</p>
+                     </div>
+                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-electric-blue scroll-reveal delay-200">
+                         <p class="text-gray-400 italic mb-4">"La calidad del código y la atención al detalle superaron nuestras expectativas. Altamente recomendados."</p>
+                         <p class="font-semibold text-white">- Cliente Satisfecho 2</p>
+                          <p class="text-sm text-accent-purple">CTO, Empresa Tecnológica</p>
+                     </div>
+                 </div>
+             </div>
+        </section>
+
+        <section id="cta" class="py-20 bg-gradient-to-r from-electric-blue to-accent-purple text-white overflow-hidden">
+             <div class="container mx-auto px-6 text-center">
+                 <h2 class="text-3xl md:text-4xl font-bold mb-4 scroll-reveal">¿Listo para llevar tu empresa al Siguiente Nivel?</h2>
+                 <p class="text-lg mb-8 max-w-xl mx-auto scroll-reveal delay-100">Hablemos sobre cómo puedo ayudarte a alcanzar tus objetivos.</p>
+                 <a href="https://wa.me/5491165683799?text=Estoy%20interesado%20en%20saber%20m%C3%A1s%20de%20tus%20servicios..." class="btn bg-white text-gray-900 hover:bg-gray-200 transform hover:-translate-y-0.5 scroll-reveal delay-200">Contáctanos Ahora</a>
+             </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-900 py-10">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <div class="flex justify-center space-x-6 mb-4">
+                <a href="https://www.youtube.com/@marcostoselli" class="hover:text-electric-blue transition duration-200 text-sm flex items-center space-x-1">
+                <span>Youtube</span> </a>
+                 <a href="https://www.linkedin.com/in/marcostoselli/" class="hover:text-electric-blue transition duration-200 text-sm flex items-center space-x-1">
+                <span>LinkedIn</span> </a>
+                 <a href="mailto:marcostoselli@gmail.com" class="hover:text-electric-blue transition duration-200 text-sm flex items-center space-x-1">
+                <span>Email</span> </a>
+            </div>
+            <p class="text-sm">© 2025 Marcos Toselli. Todos los derechos reservados.</p>
+            <p class="text-sm mt-1">Soluciones inteligentes para clientes inteligentes.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Mobile Menu Toggle Script ---
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = mobileMenuButton.querySelector('.lucide'); // Get the icon element
+
+        if (mobileMenuButton && mobileMenu && menuIcon) {
+            mobileMenuButton.addEventListener('click', () => {
+                const isHidden = mobileMenu.classList.toggle('hidden');
+                // Change icon based on menu state
+                menuIcon.textContent = isHidden ? 'menu' : 'x';
+            });
+
+            // Close menu when a link inside is clicked
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.textContent = 'menu'; // Reset icon
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (event) => {
+                const isClickInsideNav = mobileMenuButton.contains(event.target) || mobileMenu.contains(event.target);
+                if (!isClickInsideNav && !mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.textContent = 'menu'; // Reset icon
+                }
+            });
+        } else {
+             console.warn("Mobile menu elements not found.");
+        }
+
+
+        // --- Scroll Reveal Animation Script (using Intersection Observer) ---
+        const animatedElements = document.querySelectorAll('.scroll-reveal');
+
+        // Check if IntersectionObserver is supported
+        if ('IntersectionObserver' in window) {
+            const observerOptions = {
+                root: null, // Use the viewport as the root
+                rootMargin: '0px', // No margin
+                threshold: 0.1 // Trigger when 10% of the element is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observerInstance) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Add the 'is-visible' class to trigger the animation
+                        entry.target.classList.add('is-visible');
+                        // Stop observing the element once it's visible
+                        observerInstance.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Observe each element with the '.scroll-reveal' class
+            if (animatedElements.length > 0) {
+                animatedElements.forEach(el => {
+                    observer.observe(el);
+                });
+            } else {
+                console.warn("Scroll Reveal: No elements found with the '.scroll-reveal' class.");
+            }
+        } else {
+            // Fallback for browsers that don't support IntersectionObserver
+            // Simply make all elements visible immediately
+            console.warn("IntersectionObserver not supported. Scroll animations disabled.");
+            animatedElements.forEach(el => el.classList.add('is-visible'));
+        }
+    </script>
+
+</body>
+</html>
