@@ -3,280 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Minimalista - Soluciones Innovadoras</title>
-
+    <title>Dashboard con Reloj y 4 Iframes</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@latest/font/Lucide.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
-        /* Define the Lucide Icons font family */
-        @font-face {
-            font-family: 'LucideIcons';
-            /* Use CDN URL for Lucide font */
-            src: url('https://cdn.jsdelivr.net/npm/lucide-static@latest/font/Lucide.ttf') format('truetype');
+        /* Estilo para el body y html para ocupar toda la altura */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Evita scroll general */
+            background-color: #f3f4f6; /* Color de fondo gris claro */
+            font-family: 'Inter', sans-serif; /* Fuente Inter */
         }
-        /* Apply the font family to elements using Lucide icons */
-        .lucide {
-            font-family: 'LucideIcons';
-            font-style: normal;
-            font-weight: normal;
-            font-variant: normal;
-            text-rendering: auto;
-            line-height: 1;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            display: inline-block; /* Ensure icons behave like inline elements */
+        /* Contenedor principal que divide la pantalla 20/80 */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Ocupa toda la altura de la ventana */
+        }
+        /* Contenedor superior (Reloj/Alarma) - 20% */
+        .top-section {
+            flex: 0 0 20%; /* No crece, no encoge, base 20% */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem 1rem; /* Padding ajustado */
+            overflow: hidden; /* Oculta cualquier desbordamiento */
+            border-bottom: 1px solid #e5e7eb; /* Línea divisoria opcional */
+        }
+        /* Contenedor del Reloj y Alarma (dentro de top-section) */
+        .clock-container {
+            text-align: center;
+            background-color: white;
+            padding: 0.5rem 1rem; /* Padding ajustado */
+            border-radius: 10px; /* Bordes ligeramente menos redondeados */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Sombra más sutil */
+            width: 100%; /* Ocupa todo el ancho de top-section */
+            max-height: 100%; /* Asegura que no exceda el 20% */
+            overflow: hidden; /* Evita scroll interno */
+            display: flex; /* Usa flexbox para alinear elementos */
+            flex-direction: column; /* Apila elementos verticalmente */
+            justify-content: center; /* Centra verticalmente el contenido */
+        }
+        /* Contenedor para Fecha y Hora */
+        .time-display {
+             margin-bottom: 0.5rem; /* Espacio antes de la alarma */
+             display: flex; /* Usa Flexbox */
+             justify-content: space-between; /* Alinea fecha a la izq, hora a la der */
+             align-items: center; /* Centra verticalmente */
+             width: 100%; /* Ocupa todo el ancho del contenedor padre */
+        }
+        /* Fecha y Hora */
+        #fecha, #hora {
+            font-size: 1.5rem; /* Tamaño reducido */
+            color: #374151;
+            /* margin: 0.1rem 0; */ /* Eliminado, el espaciado lo maneja flex */
+            font-weight: 500;
+            line-height: 1.2; /* Reduce altura de línea */
+        }
+        /* Sección de la Alarma */
+        .alarm-section {
+            padding-top: 0.5rem;
+            border-top: 1px solid #e5e7eb;
+            width: 100%; /* Asegura que ocupe el ancho */
+            display: flex; /* Flex para alinear controles de alarma */
+            flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea si no caben */
+            justify-content: center; /* Centra los elementos */
+            align-items: center; /* Alinea verticalmente */
+            gap: 0.5rem; /* Espacio entre elementos */
+        }
+        /* Input de tiempo */
+        input[type="time"] {
+            padding: 0.3rem 0.4rem; /* Padding reducido */
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 0.8rem; /* Tamaño fuente reducido */
+        }
+        /* Botones */
+        button {
+            padding: 0.4rem 0.7rem; /* Padding reducido */
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            font-size: 0.8rem; /* Tamaño fuente reducido */
+            white-space: nowrap; /* Evita que el texto del botón se divida */
+        }
+        .btn-set { background-color: #3b82f6; color: white; }
+        .btn-set:hover { background-color: #2563eb; }
+        .btn-clear { background-color: #ef4444; color: white; }
+        .btn-clear:hover { background-color: #dc2626; }
+        /* Estado de la alarma */
+        #alarm-status {
+            color: #6b7280;
+            font-size: 0.75rem; /* Tamaño fuente muy reducido */
+            min-height: 1em; /* Altura mínima */
+            text-align: center; /* Centrado */
+            width: 100%; /* Ocupa ancho para centrar bien */
+            order: 3; /* Asegura que aparezca después de los botones en el flex wrap */
         }
 
-        /* --- General Styles --- */
-        html {
-            scroll-behavior: smooth;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #111827; /* Dark background */
-            color: #e5e7eb; /* Light text */
-            overflow-x: hidden; /* Prevent horizontal scroll */
-        }
-
-        /* --- Custom Color Palette --- */
-        .bg-electric-blue { background-color: #2563eb; }
-        .text-electric-blue { color: #3b82f6; }
-        .border-electric-blue { border-color: #3b82f6; }
-        .hover\:bg-electric-blue-dark:hover { background-color: #1d4ed8; }
-
-        .bg-accent-purple { background-color: #7c3aed; }
-        .text-accent-purple { color: #9333ea; }
-        .border-accent-purple { border-color: #9333ea; }
-        .hover\:bg-accent-purple-dark:hover { background-color: #6d28d9; }
-
-        /* --- Button Styles --- */
-        .btn {
-            @apply inline-block px-6 py-3 rounded-lg font-semibold transition duration-300 ease-in-out shadow-md;
-        }
-        .btn-primary {
-            @apply bg-electric-blue text-white hover:bg-electric-blue-dark transform hover:-translate-y-0.5;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3); /* Neon glow effect */
-        }
-        .btn-secondary {
-            @apply bg-transparent border-2 border-accent-purple text-accent-purple hover:bg-accent-purple hover:text-white transform hover:-translate-y-0.5;
+        /* Contenedor inferior (Iframes) - 80% */
+        .bottom-section {
+            flex: 1 1 80%; /* Crece y encoge, base 80% */
+            display: grid;
+            grid-template-columns: 1fr; /* Móvil: 1 columna */
+            grid-template-rows: repeat(4, 1fr); /* Móvil: 4 filas */
+            gap: 0.5rem; /* Espacio reducido entre iframes */
+            padding: 0.5rem; /* Padding reducido */
+            overflow: hidden; /* Oculta el desbordamiento */
         }
 
-        /* --- Card Styles --- */
-        .info-card {
-            @apply bg-gray-800 p-6 rounded-xl shadow-lg transition-all duration-300 ease-in-out hover:shadow-purple-500/30 hover:border-purple-500 border border-transparent flex flex-col items-center text-center; /* Center content */
-            /* Optional: Set a max-width for cards if needed */
-            /* max-width: 350px; */
-        }
-        /* Style for the icon within the card */
-        .info-card .lucide {
-            @apply text-accent-purple text-4xl mb-4; /* Icon color, size, and margin */
-        }
-
-        /* --- Fixed Navigation --- */
-        .fixed-nav {
-            @apply fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-sm shadow-lg;
+        /* En pantallas medianas y más grandes, cuadrícula 2x2 */
+        @media (min-width: 768px) { /* md breakpoint */
+            .bottom-section {
+                grid-template-columns: repeat(2, 1fr); /* 2 columnas */
+                grid-template-rows: repeat(2, 1fr);    /* 2 filas */
+                gap: 1rem; /* Restaura gap para desktop */
+                padding: 1rem; /* Restaura padding para desktop */
+            }
+            #fecha, #hora { font-size: 1.8rem; } /* Restaura tamaño fuente reloj en desktop */
+            button, input[type="time"], #alarm-status { font-size: 0.85rem; } /* Ligeramente más grande en desktop */
         }
 
-        /* --- Scroll Animation Styles --- */
-        .scroll-reveal {
-            opacity: 0;
-            transform: translateY(25px);
-            transition: opacity 0.6s cubic-bezier(0.645, 0.045, 0.355, 1),
-                        transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
-            will-change: opacity, transform; /* Performance optimization */
+        /* Contenedor individual de cada Iframe */
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #e5e7eb;
         }
-        .scroll-reveal.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        /* Delay classes for staggered animations */
-        .scroll-reveal.delay-100 { transition-delay: 0.1s; }
-        .scroll-reveal.delay-200 { transition-delay: 0.2s; }
-        .scroll-reveal.delay-300 { transition-delay: 0.3s; }
-        .scroll-reveal.delay-400 { transition-delay: 0.4s; }
 
+        /* Iframe responsivo */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* --- Estilos para el Modal de Alarma --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background-color: white; padding: 1.5rem; border-radius: 8px; /* Padding reducido */
+            text-align: center; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+        }
+        .modal-content h2 { font-size: 1.3rem; margin-bottom: 0.8rem; color: #1f2937; } /* Tamaño reducido */
+        .modal-content p { margin-bottom: 1rem; color: #4b5563; font-size: 0.9rem;} /* Tamaño reducido */
+        .modal-close-btn { background-color: #6b7280; color: white; padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem;} /* Tamaño reducido */
+        .modal-close-btn:hover { background-color: #4b5563; }
+        /* --- Fin Estilos Modal --- */
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body class="antialiased">
+<body>
 
-    <header class="fixed-nav">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-white">
-                Marcos<span class="text-electric-blue">Toselli</span>
-            </a>
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="#hero" class="text-gray-300 hover:text-electric-blue transition duration-200">Inicio</a>
-                <a href="#features" class="text-gray-300 hover:text-electric-blue transition duration-200">Características</a>
-                <a href="#testimonials" class="text-gray-300 hover:text-electric-blue transition duration-200">Testimonios</a>
-                <a href="#cta" class="text-gray-300 hover:text-electric-blue transition duration-200">Contacto</a>
+    <div class="main-layout">
+
+        <div class="top-section">
+            <div class="clock-container">
+                <div class="time-display">
+                    <div id="fecha">Cargando fecha...</div>
+                    <div id="hora">Cargando hora...</div>
+                </div>
+                <div class="alarm-section">
+                    <label for="alarm-time" class="sr-only">Hora de la alarma:</label>
+                    <input type="time" id="alarm-time">
+                    <button id="set-alarm-btn" class="btn-set">Establecer</button>
+                    <button id="clear-alarm-btn" class="btn-clear">Limpiar</button>
+                    <div id="alarm-status">No hay alarma establecida</div>
+                </div>
             </div>
-            <button id="mobile-menu-button" class="md:hidden text-gray-300 hover:text-electric-blue focus:outline-none">
-                 <i class="lucide">menu</i>
-            </button>
-            <div id="mobile-menu" class="hidden absolute top-full left-0 w-full bg-gray-900 md:hidden">
-                 <div class="flex flex-col items-center space-y-4 py-4">
-                     <a href="#hero" class="text-gray-300 hover:text-electric-blue transition duration-200">Inicio</a>
-                     <a href="#features" class="text-gray-300 hover:text-electric-blue transition duration-200">Características</a>
-                     <a href="#testimonials" class="text-gray-300 hover:text-electric-blue transition duration-200">Testimonios</a>
-                     <a href="#cta" class="text-gray-300 hover:text-electric-blue transition duration-200">Contacto</a>
-                 </div>
-             </div>
-        </nav>
-    </header>
-
-    <main class="pt-20">
-        <section id="hero" class="container mx-auto px-6 py-24 text-center flex flex-col items-center">
-            <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4 text-white">
-                Innovación <span class="text-electric-blue">Digital</span>
-            </h1>
-            <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl">
-                Transformando ideas complejas en soluciones tecnológicas elegantes y eficientes que impulsan tu negocio.
-            </p>
-            <a href="#features" class="btn btn-primary">Descubre Más</a>
-            <img src="https://lh3.googleusercontent.com/fife/ALs6j_GegWDqcYSVv0Xa6hCTcTm2SNLPYqJClwnlhJnmnvk7tbwBfhpQBsd8v91OMMB6q0U5i9hoYaMRg7-oqkIEjS_nksgu5oRTMUDHWZuIKfry52mGCC8URAFTC5kziGlZuTClsQ9o44LFxDbAUAfxpl6h1beK6jD13lMk3XMIqm8ic5rXfGg849lyJbXGdelC1n9s7Jn_Cu4bFBFj770AQzggVPC-JRywgBxIWr9Rq-pKc86bBPfmpJEMCgTQvxmLc6YYdkGGNxt3UFZRRVTsL1eAxuy2WjmFxnSM7IUtz5w8r4NTMRrb0H03eQwS3C2V7WmD6SkIhgPDfAiw5kiIyZHzl0R8G-KU2kJi18OF2_E8Ia9ZXecYjKkol2iFbcy-l_LZWASWaBSHSOeSSLLi2sh-VvkMV8te5_FMMSN6aB3154AwOvw4r4Faqb-i-DXMTzrAmc1hqhJBXG-78dTduBvdc7Q6qEKZHrWbQ2VoLCopdXNIoVmC77l2wwfpJnfF_VFW3XGKpIFeNW4fVxraZr6YPsksPvgIKsT2pKaYZ69bA4JoO7C42AvpAdpnDx_RHdMkBKpBH6z2BibLghIioA1P3C3hPGPVbtBOeQGV_3ewD_GI10E2fAOLuR1vlzlUMJ0Fxqe2GNFeFzIHLbQ001uF1d34-3-_X9hTCDyr0Fgo8B3qTbQ-kuOvZxtuJnxeLZIkttN3T8GnsQIn8z5r1qkfqb2GrpRP_ALP_g_3XgQivI8cgbaZx2cSnpnfsXtIDl8stHn5bEqvBKkqKdtFhDL8iix3-5npt_Cd3yT8sHO1FQ9guEMjGm2iwN6pEWZjPZCHrNKNo3HE-WdiXW-FwjXLlvflGLn3_v12C8TZmEuUUywxn8miKEIFotqHZN5qWRG-kOqxbWbDPrbfTyUK9bRbCuqwvWBpdlmtveTThkGh4z8E3YvnIndV4w7m7hmb1VsnhC96OsB1feAF1IvqWJYz_Dvkw4XsqDw0lIEtGFd-ahvJFtPt2b0qmOC1MmGnODyIwYMxyNUObMXSZnQv6Gt3oiWcStuUd6iY0N2ZqJN8xk89C6jU59a3ERtafg4Y-oPct-aDPoWis1hafk7gBT8tx8zb6Mv8dzk5jIQAQ9ATq2snKpvK_zpDNeL8ILMV6lYdNlZiBsDR5cqY9E1VJC1yZ7VPtoHlzXW3_K4-ZFWYJohuZV8XFjLr8X-qiLn5Elb3L3BsTE5QF9tC0KeO7vLRfoRwZWvoFP-47DWmkGk89fsvWDrDEybCazh3GHYOpJ26QtrOEkvHFKhaVbgiqd7M3jxvrFgTcBiQSlxYN2zc5j-4MZ2zCF3c0gY_oQfCZ5grW0NY6_g7KRZEiLNCIxuy4sHXD1mBgNpA_iP2C7Fis_snLODH3r0Xd2LKgEOU8hN8mhwh3D5RO-_XOGFNHg0MCAP3qxruKbIQe27gASe2BmlJJwQVfJMIZ2ZOOfeqbPi5A-cNTNgMYZvpWqkvgKkPYmw3z5FkzcFhANozjREV1C7JFSUixPeZjUHoxq-YA3D8-aaU8nItykGR1GUhvrOpAsFZE3x1dQXzBkXRmdQG48-wOYiYUJJebncqhZpMFWX54bEbuI2S92QqxbCB5A=w785-h915"
-                 alt="Ilustración isométrica abstracta representando tecnología"
-                 class="mt-12 rounded-lg shadow-xl w-full max-w-3xl"
-                 onerror="this.src='https://placehold.co/800x400/111827/cccccc?text=Error+al+cargar+imagen'">
-        </section>
-
-        <section id="features" class="py-20 bg-gray-800/50 overflow-hidden">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white scroll-reveal">Soluciones <span class="text-accent-purple">Inteligentes</span></h2>
-                <p class="text-gray-400 mb-12 max-w-xl mx-auto scroll-reveal delay-100">Desde desarrollo a medida hasta consultoría estratégica, te ofrecemos las herramientas para triunfar.</p>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                    <div class="info-card scroll-reveal delay-200">
-                        <i class="lucide">search</i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Deep research</h3>
-                        <p class="text-gray-400">Usando las ultimas herramientas de IA se generan investigaciones de mercado de tipo desk research</p>
-                    </div>
-                    <div class="info-card scroll-reveal delay-300">
-                         <i class="lucide">workflow</i>
-                         <h3 class="text-xl font-semibold mb-3 text-white">Optimizacion</h3>
-                        <p class="text-gray-400">Se analizan los diferentes procesos dentro de la organizacion y se aplican flujos de mejora.</p>
-                    </div>
-                    </div>
-            </div>
-        </section>
-
-        <section id="testimonials" class="py-20 overflow-hidden">
-             <div class="container mx-auto px-6 text-center">
-                 <h2 class="text-3xl md:text-4xl font-bold mb-12 text-white scroll-reveal">Lo que <span class="text-electric-blue">Dicen</span> Nuestros Clientes</h2>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-electric-blue scroll-reveal delay-100">
-                         <p class="text-gray-400 italic mb-4">"Su enfoque minimalista y eficiente nos permitió lanzar nuestro producto en tiempo récord. ¡Increíble profesionalismo!"</p>
-                         <p class="font-semibold text-white">- Cliente Satisfecho 1</p>
-                         <p class="text-sm text-accent-purple">CEO, Startup Innovadora</p>
-                     </div>
-                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-electric-blue scroll-reveal delay-200">
-                         <p class="text-gray-400 italic mb-4">"La calidad del código y la atención al detalle superaron nuestras expectativas. Altamente recomendados."</p>
-                         <p class="font-semibold text-white">- Cliente Satisfecho 2</p>
-                          <p class="text-sm text-accent-purple">CTO, Empresa Tecnológica</p>
-                     </div>
-                 </div>
-             </div>
-        </section>
-
-        <section id="cta" class="py-20 bg-gradient-to-r from-electric-blue to-accent-purple text-white overflow-hidden">
-             <div class="container mx-auto px-6 text-center">
-                 <h2 class="text-3xl md:text-4xl font-bold mb-4 scroll-reveal">¿Listo para llevar tu empresa al Siguiente Nivel?</h2>
-                 <p class="text-lg mb-8 max-w-xl mx-auto scroll-reveal delay-100">Hablemos sobre cómo puedo ayudarte a alcanzar tus objetivos.</p>
-                 <a href="https://wa.me/5491165683799?text=Estoy%20interesado%20en%20saber%20m%C3%A1s%20de%20tus%20servicios..." class="btn bg-white text-gray-900 hover:bg-gray-200 transform hover:-translate-y-0.5 scroll-reveal delay-200">Contáctanos Ahora</a>
-             </div>
-        </section>
-
-    </main>
-
-    <footer class="bg-gray-900 py-10">
-        <div class="container mx-auto px-6 text-center text-gray-400">
-            <div class="flex justify-center space-x-6 mb-4">
-                <a href="https://www.youtube.com/@marcostoselli" class="hover:text-electric-blue transition duration-200 text-sm flex items-center space-x-1">
-                <span>Youtube</span> </a>
-                 <a href="https://www.linkedin.com/in/marcostoselli/" class="hover:text-electric-blue transition duration-200 text-sm flex items-center space-x-1">
-                <span>LinkedIn</span> </a>
-                 <a href="mailto:marcostoselli@gmail.com" class="hover:text-electric-blue transition duration-200 text-sm flex items-center space-x-1">
-                <span>Email</span> </a>
-            </div>
-            <p class="text-sm">© 2025 Marcos Toselli. Todos los derechos reservados.</p>
-            <p class="text-sm mt-1">Soluciones inteligentes para clientes inteligentes.</p>
         </div>
-    </footer>
+
+        <div class="bottom-section">
+            <div class="iframe-container">
+                 <iframe src="https://www.youtube.com/embed/cb12KmMMDJA?si=5cqXI5biMq0Zu2Nk" title="YouTube video player 1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                 <iframe src="https://www.youtube.com/embed/OR9MH16MKrg?si=WtWP--O0_ab1z1-9" title="YouTube video player 2" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                 <iframe src="https://www.youtube.com/embed/avly0uwZzOE?si=PQO2NtAxXUv7IYd9" title="YouTube video player 3" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+            <div class="iframe-container">
+                 <iframe src="https://www.youtube.com/embed/jTDk5CswBVk?si=PxM-u4r8DdC1cdam" title="YouTube video player 4" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="alarm-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>¡Alarma!</h2>
+            <p>¡Es la hora!</p>
+            <button id="modal-close-btn" class="modal-close-btn">Cerrar</button>
+        </div>
+    </div>
 
     <script>
-        // --- Mobile Menu Toggle Script ---
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuIcon = mobileMenuButton.querySelector('.lucide'); // Get the icon element
+        // Elementos del DOM
+        const fechaEl = document.getElementById('fecha');
+        const horaEl = document.getElementById('hora');
+        const alarmTimeInput = document.getElementById('alarm-time');
+        const setAlarmBtn = document.getElementById('set-alarm-btn');
+        const clearAlarmBtn = document.getElementById('clear-alarm-btn');
+        const alarmStatusEl = document.getElementById('alarm-status');
+        const alarmModal = document.getElementById('alarm-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
 
-        if (mobileMenuButton && mobileMenu && menuIcon) {
-            mobileMenuButton.addEventListener('click', () => {
-                const isHidden = mobileMenu.classList.toggle('hidden');
-                // Change icon based on menu state
-                menuIcon.textContent = isHidden ? 'menu' : 'x';
-            });
+        // Variables de estado
+        let alarmTime = null;
+        let alarmIntervalId = null;
+        let alarmTriggeredToday = false;
 
-            // Close menu when a link inside is clicked
-            mobileMenu.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    mobileMenu.classList.add('hidden');
-                    menuIcon.textContent = 'menu'; // Reset icon
-                });
-            });
+        // --- Inicialización de Tone.js ---
+        let synth;
+        let audioInitialized = false;
 
-            // Close menu when clicking outside
-            document.addEventListener('click', (event) => {
-                const isClickInsideNav = mobileMenuButton.contains(event.target) || mobileMenu.contains(event.target);
-                if (!isClickInsideNav && !mobileMenu.classList.contains('hidden')) {
-                    mobileMenu.classList.add('hidden');
-                    menuIcon.textContent = 'menu'; // Reset icon
+        async function initializeAudio() {
+            if (!audioInitialized && Tone.context.state !== 'running') {
+                try {
+                    await Tone.start();
+                    console.log("AudioContext iniciado.");
+                    synth = new Tone.Synth().toDestination();
+                    audioInitialized = true;
+                } catch (e) {
+                    console.error("Error al iniciar AudioContext:", e);
+                    alarmStatusEl.textContent = "Error audio";
                 }
-            });
-        } else {
-             console.warn("Mobile menu elements not found.");
-        }
-
-
-        // --- Scroll Reveal Animation Script (using Intersection Observer) ---
-        const animatedElements = document.querySelectorAll('.scroll-reveal');
-
-        // Check if IntersectionObserver is supported
-        if ('IntersectionObserver' in window) {
-            const observerOptions = {
-                root: null, // Use the viewport as the root
-                rootMargin: '0px', // No margin
-                threshold: 0.1 // Trigger when 10% of the element is visible
-            };
-
-            const observer = new IntersectionObserver((entries, observerInstance) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        // Add the 'is-visible' class to trigger the animation
-                        entry.target.classList.add('is-visible');
-                        // Stop observing the element once it's visible
-                        observerInstance.unobserve(entry.target);
-                    }
-                });
-            }, observerOptions);
-
-            // Observe each element with the '.scroll-reveal' class
-            if (animatedElements.length > 0) {
-                animatedElements.forEach(el => {
-                    observer.observe(el);
-                });
-            } else {
-                console.warn("Scroll Reveal: No elements found with the '.scroll-reveal' class.");
+            } else if (Tone.context.state === 'running' && !synth) {
+                 console.log("AudioContext corriendo, creando synth.");
+                 synth = new Tone.Synth().toDestination();
+                 audioInitialized = true;
             }
-        } else {
-            // Fallback for browsers that don't support IntersectionObserver
-            // Simply make all elements visible immediately
-            console.warn("IntersectionObserver not supported. Scroll animations disabled.");
-            animatedElements.forEach(el => el.classList.add('is-visible'));
         }
+        document.body.addEventListener('pointerdown', initializeAudio, { once: true });
+
+        // --- Funciones del Reloj ---
+        function formatTwoDigits(num) {
+            return String(num).padStart(2, '0');
+        }
+
+        function actualizarReloj() {
+            const ahora = new Date();
+            const dia = formatTwoDigits(ahora.getDate());
+            const mes = formatTwoDigits(ahora.getMonth() + 1);
+            const anio = String(ahora.getFullYear()).slice(-2);
+            fechaEl.textContent = `${dia}/${mes}/${anio}`;
+            const horas = formatTwoDigits(ahora.getHours());
+            const minutos = formatTwoDigits(ahora.getMinutes());
+            const segundos = formatTwoDigits(ahora.getSeconds());
+            horaEl.textContent = `${horas}:${minutos}:${segundos}`;
+            checkAlarm(horas, minutos);
+        }
+
+        // --- Funciones de la Alarma ---
+        function checkAlarm(currentHours, currentMinutes) {
+            if (alarmTime) {
+                const currentTimeFormatted = `${currentHours}:${currentMinutes}`;
+                if (currentTimeFormatted === alarmTime && !alarmTriggeredToday) {
+                    triggerAlarm();
+                    alarmTriggeredToday = true;
+                } else if (currentTimeFormatted !== alarmTime) {
+                     alarmTriggeredToday = false;
+                }
+            }
+        }
+
+        async function setAlarm() {
+            await initializeAudio();
+            if (alarmTimeInput.value) {
+                alarmTime = alarmTimeInput.value;
+                alarmStatusEl.textContent = `Alarma: ${alarmTime}`;
+                alarmTimeInput.value = "";
+                alarmTriggeredToday = false;
+                console.log("Alarma establecida:", alarmTime);
+            } else {
+                console.warn("Intento de establecer alarma sin hora.");
+                alarmStatusEl.textContent = "Selecciona hora";
+                setTimeout(() => {
+                   if (!alarmTime) alarmStatusEl.textContent = "No hay alarma";
+                }, 3000);
+            }
+        }
+
+        function clearAlarm() {
+            alarmTime = null;
+            alarmStatusEl.textContent = "No hay alarma";
+            alarmTriggeredToday = false;
+            alarmTimeInput.value = "";
+            console.log("Alarma limpiada.");
+            stopAlarmSound();
+        }
+
+        // --- Funciones del Modal y Sonido ---
+        function triggerAlarm() {
+            showAlarmModal();
+            playAlarmSound();
+        }
+
+        function showAlarmModal() {
+            alarmModal.classList.add('active');
+        }
+
+        function hideAlarmModal() {
+            alarmModal.classList.remove('active');
+            stopAlarmSound();
+        }
+
+        function playAlarmSound() {
+            if (synth && audioInitialized && Tone.context.state === 'running') {
+                try {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("C4", "8n", now);
+                    synth.triggerAttackRelease("E4", "8n", now + 0.25);
+                    synth.triggerAttackRelease("G4", "8n", now + 0.5);
+                    console.log("Reproduciendo sonido...");
+                } catch (e) { console.error("Error sonido:", e); }
+            } else { console.warn("Audio no listo. Estado:", Tone.context.state); }
+        }
+
+        function stopAlarmSound() {
+             if (synth && typeof synth.triggerRelease === 'function') {
+                 try { synth.triggerRelease(); console.log("Sonido detenido."); }
+                 catch(e) { console.error("Error detener sonido:", e); }
+             }
+        }
+
+        // --- Event Listeners ---
+        setAlarmBtn.addEventListener('click', setAlarm);
+        clearAlarmBtn.addEventListener('click', clearAlarm);
+        modalCloseBtn.addEventListener('click', hideAlarmModal);
+        alarmModal.addEventListener('click', (event) => {
+            if (event.target === alarmModal) { hideAlarmModal(); }
+        });
+
+        // --- Inicialización ---
+        alarmIntervalId = setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+
     </script>
 
 </body>
