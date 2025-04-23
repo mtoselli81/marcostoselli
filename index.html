@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard con Reloj y 4 Iframes</title>
+    <title>Dashboard con Video de Fondo, Reloj y 4 Iframes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
@@ -13,14 +13,33 @@
             margin: 0;
             padding: 0;
             overflow: hidden; /* Evita scroll general */
-            background-color: #f3f4f6; /* Color de fondo gris claro */
+            /* background-color: #f3f4f6; */ /* Eliminado para ver el video */
             font-family: 'Inter', sans-serif; /* Fuente Inter */
+            position: relative; /* Necesario para el z-index del contenido */
         }
+
+        /* Estilos para el video de fondo */
+        #background-video {
+            position: fixed; /* Fijo en la ventana */
+            right: 0;
+            bottom: 0;
+            min-width: 100%; /* Asegura que cubra todo el ancho */
+            min-height: 100%; /* Asegura que cubra todo el alto */
+            width: auto; /* Mantiene proporción */
+            height: auto; /* Mantiene proporción */
+            z-index: -100; /* Detrás de todo el contenido */
+            object-fit: cover; /* Cubre el área sin distorsión */
+            /* background: #f3f4f6 url('placeholder.jpg') no-repeat center center/cover; */ /* Opcional: Imagen de fallback */
+        }
+
         /* Contenedor principal que divide la pantalla 20/80 */
         .main-layout {
             display: flex;
             flex-direction: column;
             height: 100vh; /* Ocupa toda la altura de la ventana */
+            position: relative; /* Para asegurar que esté sobre el video */
+            z-index: 1; /* Encima del video */
+            /* background-color: rgba(243, 244, 246, 0.5); */ /* Fondo semi-transparente opcional */
         }
         /* Contenedor superior (Reloj/Alarma) - 20% */
         .top-section {
@@ -30,88 +49,95 @@
             align-items: center;
             padding: 0.5rem 1rem; /* Padding ajustado */
             overflow: hidden; /* Oculta cualquier desbordamiento */
-            border-bottom: 1px solid #e5e7eb; /* Línea divisoria opcional */
+            /* border-bottom: 1px solid #e5e7eb; */ /* Quitada para mejor integración con fondo */
+             background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco semi-transparente */
+             backdrop-filter: blur(5px); /* Efecto blur opcional */
+             border-bottom: 1px solid rgba(229, 231, 235, 0.5); /* Borde semi-transparente */
         }
         /* Contenedor del Reloj y Alarma (dentro de top-section) */
         .clock-container {
             text-align: center;
-            background-color: white;
+            /* background-color: white; */ /* Hecho transparente */
             padding: 0.5rem 1rem; /* Padding ajustado */
-            border-radius: 10px; /* Bordes ligeramente menos redondeados */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Sombra más sutil */
-            width: 100%; /* Ocupa todo el ancho de top-section */
-            max-height: 100%; /* Asegura que no exceda el 20% */
-            overflow: hidden; /* Evita scroll interno */
-            display: flex; /* Usa flexbox para alinear elementos */
-            flex-direction: column; /* Apila elementos verticalmente */
-            justify-content: center; /* Centra verticalmente el contenido */
+            border-radius: 10px;
+            /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); */ /* Sombra quitada */
+            width: 100%;
+            max-height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         /* Contenedor para Fecha y Hora */
         .time-display {
-             margin-bottom: 0.5rem; /* Espacio antes de la alarma */
-             display: flex; /* Usa Flexbox */
-             justify-content: space-between; /* Alinea fecha a la izq, hora a la der */
-             align-items: center; /* Centra verticalmente */
-             width: 100%; /* Ocupa todo el ancho del contenedor padre */
+             margin-bottom: 0.5rem;
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             width: 100%;
+             color: #1f2937; /* Color de texto más oscuro para contraste */
         }
         /* Fecha y Hora */
         #fecha, #hora {
-            font-size: 1.5rem; /* Tamaño reducido */
-            color: #374151;
-            /* margin: 0.1rem 0; */ /* Eliminado, el espaciado lo maneja flex */
+            font-size: 1.5rem;
+            /* color: #374151; */ /* Color heredado de .time-display */
             font-weight: 500;
-            line-height: 1.2; /* Reduce altura de línea */
+            line-height: 1.2;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Sombra de texto ligera */
         }
         /* Sección de la Alarma */
         .alarm-section {
             padding-top: 0.5rem;
-            border-top: 1px solid #e5e7eb;
-            width: 100%; /* Asegura que ocupe el ancho */
-            display: flex; /* Flex para alinear controles de alarma */
-            flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea si no caben */
-            justify-content: center; /* Centra los elementos */
-            align-items: center; /* Alinea verticalmente */
-            gap: 0.5rem; /* Espacio entre elementos */
+            border-top: 1px solid rgba(209, 213, 219, 0.6); /* Borde semi-transparente */
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
         }
         /* Input de tiempo */
         input[type="time"] {
-            padding: 0.3rem 0.4rem; /* Padding reducido */
+            padding: 0.3rem 0.4rem;
             border: 1px solid #d1d5db;
             border-radius: 5px;
-            font-size: 0.8rem; /* Tamaño fuente reducido */
+            font-size: 0.8rem;
+            background-color: rgba(255, 255, 255, 0.8); /* Fondo ligero */
         }
         /* Botones */
         button {
-            padding: 0.4rem 0.7rem; /* Padding reducido */
+            padding: 0.4rem 0.7rem;
             border-radius: 5px;
             cursor: pointer;
             font-weight: 500;
             transition: background-color 0.2s;
-            font-size: 0.8rem; /* Tamaño fuente reducido */
-            white-space: nowrap; /* Evita que el texto del botón se divida */
+            font-size: 0.8rem;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Sombra ligera en botones */
         }
-        .btn-set { background-color: #3b82f6; color: white; }
+        .btn-set { background-color: #3b82f6; color: white; border: none; }
         .btn-set:hover { background-color: #2563eb; }
-        .btn-clear { background-color: #ef4444; color: white; }
+        .btn-clear { background-color: #ef4444; color: white; border: none; }
         .btn-clear:hover { background-color: #dc2626; }
         /* Estado de la alarma */
         #alarm-status {
-            color: #6b7280;
-            font-size: 0.75rem; /* Tamaño fuente muy reducido */
-            min-height: 1em; /* Altura mínima */
-            text-align: center; /* Centrado */
-            width: 100%; /* Ocupa ancho para centrar bien */
-            order: 3; /* Asegura que aparezca después de los botones en el flex wrap */
+            color: #374151; /* Color más oscuro */
+            font-size: 0.75rem;
+            min-height: 1em;
+            text-align: center;
+            width: 100%;
+            order: 3;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.5); /* Sombra clara */
         }
 
         /* Contenedor inferior (Iframes) - 80% */
         .bottom-section {
-            flex: 1 1 80%; /* Crece y encoge, base 80% */
+            flex: 1 1 80%;
             display: grid;
             grid-template-columns: 1fr; /* Móvil: 1 columna */
             grid-template-rows: repeat(4, 1fr); /* Móvil: 4 filas */
-            gap: 0.5rem; /* Espacio reducido entre iframes */
-            padding: 0.5rem; /* Padding reducido */
+            gap: 0.5rem;
+            padding: 0.5rem;
             overflow: hidden; /* Oculta el desbordamiento */
         }
 
@@ -120,11 +146,11 @@
             .bottom-section {
                 grid-template-columns: repeat(2, 1fr); /* 2 columnas */
                 grid-template-rows: repeat(2, 1fr);    /* 2 filas */
-                gap: 1rem; /* Restaura gap para desktop */
-                padding: 1rem; /* Restaura padding para desktop */
+                gap: 1rem;
+                padding: 1rem;
             }
-            #fecha, #hora { font-size: 1.8rem; } /* Restaura tamaño fuente reloj en desktop */
-            button, input[type="time"], #alarm-status { font-size: 0.85rem; } /* Ligeramente más grande en desktop */
+            #fecha, #hora { font-size: 1.8rem; }
+            button, input[type="time"], #alarm-status { font-size: 0.85rem; }
         }
 
         /* Contenedor individual de cada Iframe */
@@ -133,7 +159,8 @@
             height: 100%;
             border-radius: 8px;
             overflow: hidden;
-            background-color: #e5e7eb;
+            background-color: rgba(229, 231, 235, 0.7); /* Fondo semi-transparente */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
         }
 
         /* Iframe responsivo */
@@ -147,25 +174,33 @@
         /* --- Estilos para el Modal de Alarma --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); display: flex;
+            background-color: rgba(0, 0, 0, 0.6); /* Más oscuro */
+            display: flex;
             justify-content: center; align-items: center; z-index: 1000;
             opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+            backdrop-filter: blur(3px); /* Efecto blur en el fondo del modal */
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-content {
-            background-color: white; padding: 1.5rem; border-radius: 8px; /* Padding reducido */
+            background-color: rgba(255, 255, 255, 0.95); /* Ligeramente transparente */
+            padding: 1.5rem; border-radius: 8px;
             text-align: center; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             max-width: 90%;
         }
-        .modal-content h2 { font-size: 1.3rem; margin-bottom: 0.8rem; color: #1f2937; } /* Tamaño reducido */
-        .modal-content p { margin-bottom: 1rem; color: #4b5563; font-size: 0.9rem;} /* Tamaño reducido */
-        .modal-close-btn { background-color: #6b7280; color: white; padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem;} /* Tamaño reducido */
+        .modal-content h2 { font-size: 1.3rem; margin-bottom: 0.8rem; color: #1f2937; }
+        .modal-content p { margin-bottom: 1rem; color: #4b5563; font-size: 0.9rem;}
+        .modal-close-btn { background-color: #6b7280; color: white; padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem; border: none;}
         .modal-close-btn:hover { background-color: #4b5563; }
         /* --- Fin Estilos Modal --- */
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
+
+    <video autoplay muted loop playsinline id="background-video">
+        <source src="https://raw.githubusercontent.com/mtoselli81/marcostoselli/main/Video_Listo_Mis_Medios.mp4" type="video/mp4">
+        Tu navegador no soporta videos HTML5.
+    </video>
 
     <div class="main-layout">
 
@@ -211,6 +246,11 @@
     </div>
 
     <script>
+        // --- Todo el JavaScript anterior se mantiene igual ---
+        // (Elementos del DOM, Variables de estado, Inicialización Tone.js,
+        // Funciones del Reloj, Funciones de Alarma, Funciones Modal/Sonido,
+        // Event Listeners, Inicialización)
+
         // Elementos del DOM
         const fechaEl = document.getElementById('fecha');
         const horaEl = document.getElementById('hora');
