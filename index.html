@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trivia Naturaleza (Con Repaso): Aventura Animal y Vegetal</title>
+    <title>Trivia Naturaleza (Con Repaso y WhatsApp): Aventura Animal y Vegetal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Nunito', sans-serif;
@@ -68,14 +69,28 @@
             animation: fadeIn 0.5s ease-out forwards;
         }
         /* Botones principales con gradiente verde */
-        .start-button, .restart-button, .review-button {
+        .main-button { /* Clase genérica para botones principales */
             background-image: linear-gradient(to right, #10b981, #34d399); /* Tailwind bg-emerald-500 to bg-emerald-400 */
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 9999px; /* rounded-full */
+            transition: all 0.3s ease-in-out;
+            transform: scale(1);
+            display: inline-flex; /* Para alinear ícono y texto */
+            align-items: center;
+            justify-content: center;
         }
-        .start-button:hover, .restart-button:hover, .review-button:hover {
+        .main-button:hover {
             background-image: linear-gradient(to right, #059669, #10b981); /* Tailwind bg-emerald-600 to bg-emerald-500 */
             box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+            transform: scale(1.05);
         }
+        .main-button i { /* Estilo para íconos dentro de los botones */
+            margin-right: 0.5rem;
+        }
+
         /* Estilos para el interruptor de modo aleatorio */
         .switch {
             position: relative;
@@ -121,7 +136,7 @@
         }
         /* Títulos y textos con colores naturaleza */
         h1, h2 { color: #065f46; } /* Tailwind text-emerald-800 */
-        p, span { color: #047857; } /* Tailwind text-emerald-700 */
+        p, span:not(.slider) { color: #047857; } /* Tailwind text-emerald-700, excluyendo el slider */
         #score { color: #059669; } /* Tailwind text-emerald-600 */
         #finalScore { color: #a16207; } /* Tailwind text-yellow-700 - Mantener puntaje destacado */
         #questionCategory { color: #15803d; } /* Tailwind text-green-700 */
@@ -132,7 +147,7 @@
 
         <div id="startScreen" class="fade-in">
             <h1 class="text-3xl md:text-4xl font-bold mb-4 mt-8">🌳 ¡Aventura Animal y Vegetal! 🍃</h1>
-            <p class="text-lg mb-6">¡Si vas al Sarmiento y estas en 4b no podes dejar de explorar el increíble mundo de los seres vivos y demostrá cuánto sabes!</p>
+            <p class="text-lg mb-6">¡Explora el increíble mundo de los seres vivos y demuestra cuánto sabes!</p>
 
             <div class="flex items-center justify-center space-x-3 mb-8">
                 <span class="text-sm font-medium">Preguntas Ordenadas</span>
@@ -143,8 +158,8 @@
                 <span class="text-sm font-medium">Modo Aleatorio</span>
             </div>
 
-            <button id="startButton" class="start-button text-white font-bold py-3 px-8 rounded-full text-xl shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-                ¡Comenzar Aventura!
+            <button id="startButton" class="main-button text-xl">
+                <i class="fas fa-play"></i>¡Comenzar Aventura!
             </button>
         </div>
 
@@ -156,7 +171,8 @@
             <div class="progress-bar-container">
                 <div id="progressBar" class="progress-bar" style="width: 0%;"></div>
             </div>
-            <div id="questionArea" class="mb-6 min-h-[100px]"> <h2 id="questionText" class="text-2xl font-semibold mb-2"></h2>
+            <div id="questionArea" class="mb-6 min-h-[100px]">
+                 <h2 id="questionText" class="text-2xl font-semibold mb-2"></h2>
                 <p id="questionCategory" class="text-sm font-medium mb-4"></p>
             </div>
             <div id="optionsArea" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -171,11 +187,14 @@
             <p id="finalScore" class="text-5xl font-bold mb-8"></p>
             <p id="finalMessage" class="text-lg mb-8"></p>
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <button id="reviewButton" class="review-button hidden text-white font-bold py-3 px-6 rounded-full text-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-                    Repasar Incorrectas
+                <button id="reviewButton" class="main-button hidden text-lg">
+                    <i class="fas fa-redo-alt"></i>Repasar Incorrectas
                 </button>
-                <button id="restartButton" class="restart-button text-white font-bold py-3 px-8 rounded-full text-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-                    Jugar de Nuevo
+                <button id="restartButton" class="main-button text-lg">
+                    <i class="fas fa-gamepad"></i>Jugar de Nuevo
+                </button>
+                <button id="whatsappShareButton" class="main-button text-lg">
+                     <i class="fab fa-whatsapp"></i>Compartir
                 </button>
             </div>
         </div>
@@ -219,7 +238,7 @@
             { category: "Animales: Estructura", question: "La principal diferencia para clasificar animales en vertebrados o invertebrados es la presencia o ausencia de:", options: ["Patas", "Alas", "Esqueleto interno", "Pelo"], correctAnswer: "Esqueleto interno" },
             // Animales: Vertebrados
             { category: "Vertebrados", question: "Los tiburones son peces especiales porque su esqueleto está hecho de un material flexible llamado...", options: ["Huesos duros", "Aire", "Cartílago", "Escamas"], correctAnswer: "Cartílago" },
-            { category: "Vertebrados", question: "¿Qué tipo de pez tiene esqueleto de cartílago y branquias visibles?", options: ["Pez Payaso", "Pez Óseo", "Tiburón (Pez Cartilaginoso)", "Salamandra"], correctAnswer: "Tiburón (Pez Cartilaginoso)" },
+            { category: "Vertebrados", question: "Según la imagen, ¿qué tipo de pez tiene esqueleto de cartílago y branquias visibles?", options: ["Pez Payaso", "Pez Óseo", "Tiburón (Pez Cartilaginoso)", "Salamandra"], correctAnswer: "Tiburón (Pez Cartilaginoso)" },
             { category: "Vertebrados", question: "La mayoría de los peces, como el pez payaso, tienen un esqueleto de huesos y branquias ocultas. Pertenecen al grupo de peces...", options: ["Cartilaginosos", "Óseos", "Pulmonados", "Abisales"], correctAnswer: "Óseos" },
             { category: "Vertebrados", question: "El pez payaso es un ejemplo de pez óseo. ¿Qué tipo de esqueleto tienen estos peces?", options: ["De cartílago", "No tienen esqueleto", "Formado por huesos", "Externo"], correctAnswer: "Formado por huesos" },
             { category: "Vertebrados", question: "¿Qué grupo de animales vertebrados, como los sapos, suelen nacer en el agua (renacuajos) y luego viven en la tierra, teniendo piel desnuda y húmeda?", options: ["Peces", "Anfibios", "Reptiles", "Mamíferos"], correctAnswer: "Anfibios" },
@@ -235,7 +254,7 @@
             { category: "Invertebrados", question: "Las esponjas de mar, que tienen un cuerpo lleno de poros y viven fijas a las rocas, son animales invertebrados del grupo de los:", options: ["Cnidarios", "Moluscos", "Poríferos", "Anélidos"], correctAnswer: "Poríferos" },
             { category: "Invertebrados", question: "¿Cómo obtienen su alimento las esponjas de mar (Poríferos)?", options: ["Cazando peces pequeños", "Filtrando el agua a través de sus poros", "Comiendo algas", "Absorbiendo luz solar"], correctAnswer: "Filtrando el agua a través de sus poros" },
             { category: "Invertebrados", question: "Las medusas y los corales, con corpos blandos y tentáculos, pertenecen al grupo de los...", options: ["Moluscos", "Cnidarios", "Artrópodos", "Equinodermos"], correctAnswer: "Cnidarios" },
-            { category: "Invertebrados", question: "¿Qué estructura usan las medusas y anémonas para capturar su alimento (Cnidarios)?", options: ["Pinzas", "Dientes", "Tentáculos", "Una concha"], correctAnswer: "Tentáculos" },
+            { category: "Invertebrados", question: "¿Qué estructura usan las medusas y anémonas para capturar su alimento?", options: ["Pinzas", "Dientes", "Tentáculos", "Una concha"], correctAnswer: "Tentáculos" },
             { category: "Invertebrados", question: "Un caracol, que a menudo lleva su casa (concha) a cuestas, es un animal invertebrado del grupo de los...", options: ["Insectos", "Anélidos", "Moluscos", "Crustáceos"], correctAnswer: "Moluscos" },
             { category: "Invertebrados", question: "¿Cuál de estos animales es un molusco SIN concha externa?", options: ["Almeja", "Caracol", "Mejillón", "Pulpo"], correctAnswer: "Pulpo" },
             { category: "Invertebrados", question: "Las lombrices de tierra, con su cuerpo blando y dividido en muchos anillos, son ejemplos de:", options: ["Artrópodos", "Moluscos", "Anélidos", "Cnidarios"], correctAnswer: "Anélidos" },
@@ -265,6 +284,7 @@
         const startButton = document.getElementById('startButton');
         const restartButton = document.getElementById('restartButton');
         const reviewButton = document.getElementById('reviewButton'); // Botón de repaso
+        const whatsappShareButton = document.getElementById('whatsappShareButton'); // Botón WhatsApp
         const randomModeToggle = document.getElementById('randomModeToggle'); // Interruptor
 
         const scoreDisplay = document.getElementById('score');
@@ -294,25 +314,23 @@
         }
 
         function startGame() {
-            // Determinar el modo de juego según el interruptor
             isRandomMode = randomModeToggle.checked;
-            isReviewMode = false; // Asegurarse de que no estamos en modo repaso
-            incorrectlyAnsweredQuestions = []; // Limpiar preguntas incorrectas anteriores
+            isReviewMode = false;
+            incorrectlyAnsweredQuestions = [];
 
             startScreen.classList.add('hidden');
             endScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
             gameScreen.classList.add('fade-in');
-            modeInfo.textContent = ""; // Limpiar indicador de modo
+            modeInfo.textContent = "";
 
             currentQuestionIndex = 0;
-            score = 0; // Reiniciar puntaje
+            score = 0;
             scoreDisplay.textContent = score;
 
-            // Preparar las preguntas según el modo
-            gameQuestions = [...questions]; // Copia el array original (ordenado por categoría)
+            gameQuestions = [...questions];
             if (isRandomMode) {
-                shuffleArray(gameQuestions); // Barajar si el modo aleatorio está activado
+                shuffleArray(gameQuestions);
             }
 
             totalQuestionsDisplay.textContent = gameQuestions.length;
@@ -321,17 +339,16 @@
 
         function startReviewRound() {
             isReviewMode = true;
-            gameQuestions = [...incorrectlyAnsweredQuestions]; // Usar las preguntas falladas
-            incorrectlyAnsweredQuestions = []; // Limpiar para futuro (o por si se falla en repaso)
+            gameQuestions = [...incorrectlyAnsweredQuestions];
+            incorrectlyAnsweredQuestions = [];
             currentQuestionIndex = 0;
-            // No se reinicia el puntaje en modo repaso
 
             endScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
             gameScreen.classList.add('fade-in');
-            modeInfo.textContent = "(Repaso)"; // Indicar que es ronda de repaso
-            totalQuestionsDisplay.textContent = gameQuestions.length; // Actualizar total para repaso
-            reviewButton.classList.add('hidden'); // Ocultar botón de repaso durante el repaso
+            modeInfo.textContent = "(Repaso)";
+            totalQuestionsDisplay.textContent = gameQuestions.length;
+            reviewButton.classList.add('hidden');
 
             loadQuestion();
         }
@@ -341,7 +358,6 @@
             if (currentQuestionIndex < gameQuestions.length) {
                 const currentQuestion = gameQuestions[currentQuestionIndex];
 
-                // Actualizar barra de progreso
                 const progress = ((currentQuestionIndex + 1) / gameQuestions.length) * 100;
                 progressBar.style.width = `${progress}%`;
 
@@ -349,36 +365,30 @@
                 questionText.textContent = currentQuestion.question;
                 questionCategory.textContent = `Categoría: ${currentQuestion.category}`;
 
-                optionsArea.innerHTML = ''; // Limpiar opciones anteriores
-                feedbackArea.innerHTML = ''; // Limpiar feedback anterior
-                feedbackArea.className = 'h-10 text-lg font-semibold'; // Resetear clases de feedback
+                optionsArea.innerHTML = '';
+                feedbackArea.innerHTML = '';
+                feedbackArea.className = 'h-10 text-lg font-semibold';
 
-                // Barajar opciones de la pregunta actual (siempre se barajan las opciones)
                 const currentOptions = [...currentQuestion.options];
                 shuffleArray(currentOptions);
 
                 currentOptions.forEach(option => {
                     const button = document.createElement('button');
                     button.textContent = option;
-                    // Aplicar estilos base a los botones de opción
                     button.classList.add(
                         'option-button', 'w-full', 'font-semibold',
                         'py-3', 'px-4', 'rounded-lg', 'border-2',
                         'focus:outline-none', 'focus:ring-2', 'focus:ring-opacity-50',
-                        'fade-in'
-                    );
-                     // Aplicar estilos específicos del tema verde
-                    button.classList.add(
-                         'bg-green-100', 'text-green-800', 'border-green-300',
-                         'hover:bg-green-200', 'hover:border-green-400', 'focus:ring-green-500'
+                        'fade-in',
+                        'bg-green-100', 'text-green-800', 'border-green-300',
+                        'hover:bg-green-200', 'hover:border-green-400', 'focus:ring-green-500'
                     );
                     button.onclick = () => checkAnswer(option, currentQuestion.correctAnswer, button, currentQuestion);
                     optionsArea.appendChild(button);
                 });
 
-                 // Añadir animación a la pregunta y opciones
                 document.getElementById('questionArea').classList.remove('fade-in');
-                void document.getElementById('questionArea').offsetWidth; // Truco para reiniciar animación
+                void document.getElementById('questionArea').offsetWidth;
                 document.getElementById('questionArea').classList.add('fade-in');
 
                 optionsArea.childNodes.forEach((node, index) => {
@@ -389,38 +399,31 @@
                 });
 
             } else {
-                // Si estábamos en modo repaso, ahora mostramos la pantalla final definitiva
                 if (isReviewMode) {
-                    isReviewMode = false; // Salir del modo repaso
-                    showEndScreen(true); // Indicar que venimos de un repaso
+                    isReviewMode = false;
+                    showEndScreen(true);
                 } else {
-                    showEndScreen(false); // Mostrar pantalla final normal
+                    showEndScreen(false);
                 }
             }
         }
 
-        // Se añade 'currentQuestionObject' para poder guardarlo si se falla
         function checkAnswer(selectedOption, correctAnswer, button, currentQuestionObject) {
-            // Deshabilitar todos los botones de opción después de una selección
             const optionButtons = optionsArea.getElementsByTagName('button');
             for (let btn of optionButtons) {
                 btn.disabled = true;
-                // Mostrar cuál era la correcta si se eligió mal
                 if (btn.textContent === correctAnswer) {
                     btn.classList.add('correct-answer');
-                     // Remover clases base para evitar conflictos
                     btn.classList.remove('bg-green-100', 'text-green-800', 'border-green-300', 'hover:bg-green-200', 'hover:border-green-400');
                 }
             }
 
             if (selectedOption === correctAnswer) {
-                 // Solo sumar puntos si NO estamos en modo repaso
                 if (!isReviewMode) {
                     score += 10;
                     scoreDisplay.textContent = score;
                 }
                 button.classList.add('correct-answer');
-                 // Remover clases base para evitar conflictos
                 button.classList.remove('bg-green-100', 'text-green-800', 'border-green-300', 'hover:bg-green-200', 'hover:border-green-400');
                 feedbackArea.innerHTML = `
                     <div class="flex items-center justify-center text-green-700">
@@ -428,15 +431,12 @@
                         ¡Correcto! ${!isReviewMode ? '+10 puntos' : ''}
                     </div>`;
             } else {
-                // Si se falla y NO estamos en modo repaso, guardar la pregunta
                 if (!isReviewMode) {
-                    // Evitar duplicados si se juega varias veces y se falla la misma
                     if (!incorrectlyAnsweredQuestions.some(q => q.question === currentQuestionObject.question)) {
                          incorrectlyAnsweredQuestions.push(currentQuestionObject);
                     }
                 }
                 button.classList.add('incorrect-answer');
-                 // Remover clases base para evitar conflictos
                  button.classList.remove('bg-green-100', 'text-green-800', 'border-green-300', 'hover:bg-green-200', 'hover:border-green-400');
                 feedbackArea.innerHTML = `
                     <div class="flex items-center justify-center text-red-700">
@@ -446,26 +446,23 @@
             }
 
             currentQuestionIndex++;
-            // Esperar un poco más si la respuesta fue incorrecta para que dé tiempo a leer
             const delay = selectedOption === correctAnswer ? 1500 : 2500;
             setTimeout(loadQuestion, delay);
         }
 
-        // 'fromReview' indica si llegamos aquí después de la ronda de repaso
         function showEndScreen(fromReview) {
             gameScreen.classList.add('hidden');
             endScreen.classList.remove('hidden');
             endScreen.classList.add('fade-in');
-            modeInfo.textContent = ""; // Limpiar indicador de modo
+            modeInfo.textContent = "";
 
-            finalScoreDisplay.textContent = score; // Mostrar siempre el puntaje final acumulado
+            finalScoreDisplay.textContent = score;
             let message = "";
 
-            // Determinar mensaje final basado en el puntaje
-            if (score >= questions.length * 10 * 0.8) { // 80% o más del total original
+            if (score >= questions.length * 10 * 0.8) {
                 message = "¡Eres un Genio de la Naturaleza! 🌳 ¡Sabes muchísimo!";
                 endScreenTitle.textContent = "¡Felicitaciones! 🎉";
-            } else if (score >= questions.length * 10 * 0.5) { // 50% o más
+            } else if (score >= questions.length * 10 * 0.5) {
                 message = "¡Muy bien! Eres un gran explorador del mundo vivo. 🌱";
                  endScreenTitle.textContent = "¡Buen Trabajo! 👍";
             } else {
@@ -474,7 +471,6 @@
             }
             finalMessageDisplay.textContent = message;
 
-            // Mostrar el botón de repaso SOLO si hubo errores Y NO venimos de un repaso
             if (incorrectlyAnsweredQuestions.length > 0 && !fromReview) {
                 reviewButton.classList.remove('hidden');
             } else {
@@ -482,10 +478,21 @@
             }
         }
 
+        function shareOnWhatsApp() {
+            const totalPossibleScore = questions.length * 10;
+            // Mensaje actualizado con la URL proporcionada
+            let message = `¡Terminé la trivia "Aventura Animal y Vegetal" con ${score} de ${totalPossibleScore} puntos! 🌳🍃 ¿Te animas a probar tus conocimientos?\n\nJuega aquí: https://mtoselli81.github.io/marcostoselli/`;
+
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
         // --- Event Listeners ---
         startButton.addEventListener('click', startGame);
         restartButton.addEventListener('click', startGame);
-        reviewButton.addEventListener('click', startReviewRound); // Listener para el botón de repaso
+        reviewButton.addEventListener('click', startReviewRound);
+        whatsappShareButton.addEventListener('click', shareOnWhatsApp);
+
 
         // Iniciar la pantalla de bienvenida
         startScreen.classList.remove('hidden');
