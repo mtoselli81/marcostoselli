@@ -3,396 +3,493 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard con Video de Fondo, Reloj y 4 Iframes</title>
+    <title>Trivia Naturaleza (Con Repaso): Aventura Animal y Vegetal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilo para el body y html para ocupar toda la altura */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Evita scroll general */
-            /* background-color: #f3f4f6; */ /* Eliminado para ver el video */
-            font-family: 'Inter', sans-serif; /* Fuente Inter */
-            position: relative; /* Necesario para el z-index del contenido */
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(to bottom, #a7f3d0, #f0fdf4); /* Tailwind bg-emerald-200 to bg-emerald-50 */
         }
-
-        /* Estilos para el video de fondo */
-        #background-video {
-            position: fixed; /* Fijo en la ventana */
+        .quiz-container {
+            background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semi-transparente */
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 87, 38, 0.2); /* Sombra más verdosa */
+            border: 1px solid rgba(34, 197, 94, 0.3); /* Borde sutil verde */
+        }
+        .option-button {
+            transition: all 0.2s ease-in-out;
+            border-width: 2px;
+            background-color: #dcfce7; /* Tailwind bg-green-100 */
+            border-color: #86efac; /* Tailwind border-green-300 */
+            color: #166534; /* Tailwind text-green-800 */
+        }
+        .option-button:hover {
+            transform: scale(1.03);
+            background-color: #bbf7d0; /* Tailwind bg-green-200 */
+            border-color: #4ade80; /* Tailwind border-green-400 */
+        }
+        .correct-answer {
+            background-color: #86efac !important; /* Tailwind bg-green-300 */
+            border-color: #22c55e !important; /* Tailwind border-green-500 */
+            color: #14532d !important; /* Tailwind text-green-900 */
+            font-weight: bold;
+        }
+        .incorrect-answer {
+            background-color: #fecaca !important; /* Tailwind bg-red-200 */
+            border-color: #f87171 !important; /* Tailwind border-red-400 */
+            color: #991b1b !important; /* Tailwind text-red-800 */
+        }
+        .feedback-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+        .progress-bar-container {
+            height: 12px; /* Un poco más gruesa */
+            background-color: #d1fae5; /* Tailwind bg-emerald-100 */
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border: 1px solid #6ee7b7; /* Tailwind border-emerald-300 */
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #10b981; /* Tailwind bg-emerald-500 */
+            transition: width 0.3s ease-in-out;
+            border-radius: 6px;
+        }
+        /* Animación para aparición de elementos */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        /* Botones principales con gradiente verde */
+        .start-button, .restart-button, .review-button {
+            background-image: linear-gradient(to right, #10b981, #34d399); /* Tailwind bg-emerald-500 to bg-emerald-400 */
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .start-button:hover, .restart-button:hover, .review-button:hover {
+            background-image: linear-gradient(to right, #059669, #10b981); /* Tailwind bg-emerald-600 to bg-emerald-500 */
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+        }
+        /* Estilos para el interruptor de modo aleatorio */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
             right: 0;
             bottom: 0;
-            min-width: 100%; /* Asegura que cubra todo el ancho */
-            min-height: 100%; /* Asegura que cubra todo el alto */
-            width: auto; /* Mantiene proporción */
-            height: auto; /* Mantiene proporción */
-            z-index: -100; /* Detrás de todo el contenido */
-            object-fit: cover; /* Cubre el área sin distorsión */
-            /* background: #f3f4f6 url('placeholder.jpg') no-repeat center center/cover; */ /* Opcional: Imagen de fallback */
+            background-color: #9ca3af; /* Tailwind bg-gray-400 */
+            transition: .4s;
+            border-radius: 34px;
         }
-
-        /* Contenedor principal que divide la pantalla 20/80 */
-        .main-layout {
-            display: flex;
-            flex-direction: column;
-            height: 100vh; /* Ocupa toda la altura de la ventana */
-            position: relative; /* Para asegurar que esté sobre el video */
-            z-index: 1; /* Encima del video */
-            /* background-color: rgba(243, 244, 246, 0.5); */ /* Fondo semi-transparente opcional */
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
         }
-        /* Contenedor superior (Reloj/Alarma) - 20% */
-        .top-section {
-            flex: 0 0 20%; /* No crece, no encoge, base 20% */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0.5rem 1rem; /* Padding ajustado */
-            overflow: hidden; /* Oculta cualquier desbordamiento */
-            /* border-bottom: 1px solid #e5e7eb; */ /* Quitada para mejor integración con fondo */
-             background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco semi-transparente */
-             backdrop-filter: blur(5px); /* Efecto blur opcional */
-             border-bottom: 1px solid rgba(229, 231, 235, 0.5); /* Borde semi-transparente */
+        input:checked + .slider {
+            background-color: #059669; /* Tailwind bg-emerald-600 */
         }
-        /* Contenedor del Reloj y Alarma (dentro de top-section) */
-        .clock-container {
-            text-align: center;
-            /* background-color: white; */ /* Hecho transparente */
-            padding: 0.5rem 1rem; /* Padding ajustado */
-            border-radius: 10px;
-            /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); */ /* Sombra quitada */
-            width: 100%;
-            max-height: 100%;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        input:focus + .slider {
+            box-shadow: 0 0 1px #059669;
         }
-        /* Contenedor para Fecha y Hora */
-        .time-display {
-             margin-bottom: 0.5rem;
-             display: flex;
-             justify-content: space-between;
-             align-items: center;
-             width: 100%;
-             color: #1f2937; /* Color de texto más oscuro para contraste */
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
-        /* Fecha y Hora */
-        #fecha, #hora {
-            font-size: 1.5rem;
-            /* color: #374151; */ /* Color heredado de .time-display */
-            font-weight: 500;
-            line-height: 1.2;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Sombra de texto ligera */
-        }
-        /* Sección de la Alarma */
-        .alarm-section {
-            padding-top: 0.5rem;
-            border-top: 1px solid rgba(209, 213, 219, 0.6); /* Borde semi-transparente */
-            width: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        /* Input de tiempo */
-        input[type="time"] {
-            padding: 0.3rem 0.4rem;
-            border: 1px solid #d1d5db;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            background-color: rgba(255, 255, 255, 0.8); /* Fondo ligero */
-        }
-        /* Botones */
-        button {
-            padding: 0.4rem 0.7rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Sombra ligera en botones */
-        }
-        .btn-set { background-color: #3b82f6; color: white; border: none; }
-        .btn-set:hover { background-color: #2563eb; }
-        .btn-clear { background-color: #ef4444; color: white; border: none; }
-        .btn-clear:hover { background-color: #dc2626; }
-        /* Estado de la alarma */
-        #alarm-status {
-            color: #374151; /* Color más oscuro */
-            font-size: 0.75rem;
-            min-height: 1em;
-            text-align: center;
-            width: 100%;
-            order: 3;
-            text-shadow: 0 1px 1px rgba(255,255,255,0.5); /* Sombra clara */
-        }
-
-        /* Contenedor inferior (Iframes) - 80% */
-        .bottom-section {
-            flex: 1 1 80%;
-            display: grid;
-            grid-template-columns: 1fr; /* Móvil: 1 columna */
-            grid-template-rows: repeat(4, 1fr); /* Móvil: 4 filas */
-            gap: 0.5rem;
-            padding: 0.5rem;
-            overflow: hidden; /* Oculta el desbordamiento */
-        }
-
-        /* En pantallas medianas y más grandes, cuadrícula 2x2 */
-        @media (min-width: 768px) { /* md breakpoint */
-            .bottom-section {
-                grid-template-columns: repeat(2, 1fr); /* 2 columnas */
-                grid-template-rows: repeat(2, 1fr);    /* 2 filas */
-                gap: 1rem;
-                padding: 1rem;
-            }
-            #fecha, #hora { font-size: 1.8rem; }
-            button, input[type="time"], #alarm-status { font-size: 0.85rem; }
-        }
-
-        /* Contenedor individual de cada Iframe */
-        .iframe-container {
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
-            overflow: hidden;
-            background-color: rgba(229, 231, 235, 0.7); /* Fondo semi-transparente */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
-        }
-
-        /* Iframe responsivo */
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
-
-        /* --- Estilos para el Modal de Alarma --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); /* Más oscuro */
-            display: flex;
-            justify-content: center; align-items: center; z-index: 1000;
-            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
-            backdrop-filter: blur(3px); /* Efecto blur en el fondo del modal */
-        }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content {
-            background-color: rgba(255, 255, 255, 0.95); /* Ligeramente transparente */
-            padding: 1.5rem; border-radius: 8px;
-            text-align: center; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            max-width: 90%;
-        }
-        .modal-content h2 { font-size: 1.3rem; margin-bottom: 0.8rem; color: #1f2937; }
-        .modal-content p { margin-bottom: 1rem; color: #4b5563; font-size: 0.9rem;}
-        .modal-close-btn { background-color: #6b7280; color: white; padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem; border: none;}
-        .modal-close-btn:hover { background-color: #4b5563; }
-        /* --- Fin Estilos Modal --- */
+        /* Títulos y textos con colores naturaleza */
+        h1, h2 { color: #065f46; } /* Tailwind text-emerald-800 */
+        p, span { color: #047857; } /* Tailwind text-emerald-700 */
+        #score { color: #059669; } /* Tailwind text-emerald-600 */
+        #finalScore { color: #a16207; } /* Tailwind text-yellow-700 - Mantener puntaje destacado */
+        #questionCategory { color: #15803d; } /* Tailwind text-green-700 */
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div id="quizApp" class="quiz-container w-full max-w-2xl p-6 md:p-10 text-center">
 
-    <video autoplay muted loop playsinline id="background-video">
-        <source src="https://raw.githubusercontent.com/mtoselli81/marcostoselli/main/Video_de_Flujo_Digital_Generado.mp4" type="video/mp4">
-        Tu navegador no soporta videos HTML5.
-    </video>
+        <div id="startScreen" class="fade-in">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 mt-8">🌳 ¡Aventura Animal y Vegetal! 🍃</h1>
+            <p class="text-lg mb-6">¡Si vas al Sarmiento y estas en 4b no podes dejar de explorar el increíble mundo de los seres vivos y demostrá cuánto sabes!</p>
 
-    <div class="main-layout">
-
-        <div class="top-section">
-            <div class="clock-container">
-                <div class="time-display">
-                    <div id="fecha">Cargando fecha...</div>
-                    <div id="hora">Cargando hora...</div>
-                </div>
-                <div class="alarm-section">
-                    <label for="alarm-time" class="sr-only">Hora de la alarma:</label>
-                    <input type="time" id="alarm-time">
-                    <button id="set-alarm-btn" class="btn-set">Establecer</button>
-                    <button id="clear-alarm-btn" class="btn-clear">Limpiar</button>
-                    <div id="alarm-status">No hay alarma establecida</div>
-                </div>
+            <div class="flex items-center justify-center space-x-3 mb-8">
+                <span class="text-sm font-medium">Preguntas Ordenadas</span>
+                <label class="switch">
+                    <input type="checkbox" id="randomModeToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="text-sm font-medium">Modo Aleatorio</span>
             </div>
+
+            <button id="startButton" class="start-button text-white font-bold py-3 px-8 rounded-full text-xl shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                ¡Comenzar Aventura!
+            </button>
         </div>
 
-        <div class="bottom-section">
-            <div class="iframe-container">
-                 <iframe src="https://www.youtube.com/embed/cb12KmMMDJA?si=5cqXI5biMq0Zu2Nk" title="YouTube video player 1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        <div id="gameScreen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <p class="text-xl font-bold">Puntaje: <span id="score">0</span></p>
+                <p class="text-sm font-medium"><span id="modeInfo"></span> Pregunta <span id="questionNumber">1</span> de <span id="totalQuestions"></span></p>
             </div>
-            <div class="iframe-container">
-                 <iframe src="https://www.youtube.com/embed/OR9MH16MKrg?si=WtWP--O0_ab1z1-9" title="YouTube video player 2" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <div class="progress-bar-container">
+                <div id="progressBar" class="progress-bar" style="width: 0%;"></div>
             </div>
-            <div class="iframe-container">
-                 <iframe src="https://www.youtube.com/embed/avly0uwZzOE?si=PQO2NtAxXUv7IYd9" title="YouTube video player 3" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <div id="questionArea" class="mb-6 min-h-[100px]"> <h2 id="questionText" class="text-2xl font-semibold mb-2"></h2>
+                <p id="questionCategory" class="text-sm font-medium mb-4"></p>
             </div>
-            <div class="iframe-container">
-                 <iframe src="https://www.youtube.com/embed/jTDk5CswBVk?si=PxM-u4r8DdC1cdam" title="YouTube video player 4" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-            </div>
+            <div id="optionsArea" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                </div>
+            <div id="feedbackArea" class="h-10 text-lg font-semibold">
+                </div>
         </div>
 
-    </div>
-
-    <div id="alarm-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2>¡Alarma!</h2>
-            <p>¡Es la hora!</p>
-            <button id="modal-close-btn" class="modal-close-btn">Cerrar</button>
+        <div id="endScreen" class="hidden">
+             <h2 id="endScreenTitle" class="text-3xl md:text-4xl font-bold mb-4 mt-8">¡Aventura Completada!</h2>
+            <p class="text-2xl mb-2">Tu puntaje final es:</p>
+            <p id="finalScore" class="text-5xl font-bold mb-8"></p>
+            <p id="finalMessage" class="text-lg mb-8"></p>
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <button id="reviewButton" class="review-button hidden text-white font-bold py-3 px-6 rounded-full text-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                    Repasar Incorrectas
+                </button>
+                <button id="restartButton" class="restart-button text-white font-bold py-3 px-8 rounded-full text-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                    Jugar de Nuevo
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- Todo el JavaScript anterior se mantiene igual ---
-        // (Elementos del DOM, Variables de estado, Inicialización Tone.js,
-        // Funciones del Reloj, Funciones de Alarma, Funciones Modal/Sonido,
-        // Event Listeners, Inicialización)
+        // --- Preguntas de la Trivia (Ordenadas por categoría por defecto) ---
+        const questions = [
+            // --- 1. CARACTERÍSTICAS GENERALES Y CLASIFICACIÓN ---
+            { category: "Características de Seres Vivos", question: "Todos los seres vivos, desde una bacteria hasta una ballena, están formados por unidades muy pequeñas llamadas...", options: ["Átomos", "Moléculas", "Células", "Órganos"], correctAnswer: "Células" },
+            { category: "Características de Seres Vivos", question: "Cuando una planta crece orientando sus hojas hacia la luz del sol, está respondiendo a un...", options: ["Reflejo", "Instinto", "Estímulo", "Hábito"], correctAnswer: "Estímulo" },
+            { category: "Características de Seres Vivos", question: "La capacidad de los seres vivos de tener 'hijos' o descendencia se llama:", options: ["Nutrición", "Respiración", "Reproducción", "Adaptación"], correctAnswer: "Reproducción" },
+            { category: "La Clasificación", question: "Cuando agrupamos seres vivos con características similares (como 'animales con plumas'), estamos haciendo una...", options: ["Colección", "Mezcla", "Clasificación", "Adivinanza"], correctAnswer: "Clasificación" },
+            { category: "La Clasificación", question: "¿Para qué sirve clasificar los seres vivos?", options: ["Para que ocupen menos espacio", "Para estudiarlos y entenderlos mejor", "Para que no se peleen entre ellos", "Para darles nombres difíciles"], correctAnswer: "Para estudiarlos y entenderlos mejor" },
 
-        // Elementos del DOM
-        const fechaEl = document.getElementById('fecha');
-        const horaEl = document.getElementById('hora');
-        const alarmTimeInput = document.getElementById('alarm-time');
-        const setAlarmBtn = document.getElementById('set-alarm-btn');
-        const clearAlarmBtn = document.getElementById('clear-alarm-btn');
-        const alarmStatusEl = document.getElementById('alarm-status');
-        const alarmModal = document.getElementById('alarm-modal');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
+            // --- 2. PLANTAS ---
+            // Plantas: Fotosíntesis y Partes
+            { category: "Plantas: Alimentación", question: "¿Cómo se llama el proceso donde las plantas fabrican su propio alimento usando la luz del sol?", options: ["Respiración", "Fotosíntesis", "Digestión", "Absorción"], correctAnswer: "Fotosíntesis" },
+            { category: "Plantas: Alimentación", question: "Además de alimento, ¿qué gas importante para la respiración de los animales liberan las plantas durante la fotosíntesis?", options: ["Dióxido de Carbono", "Nitrógeno", "Oxígeno", "Vapor de agua"], correctAnswer: "Oxígeno" },
+            { category: "Plantas: Partes", question: "¿Qué parte de la planta se encarga principalmente de absorber agua y nutrientes del suelo?", options: ["Hojas", "Flores", "Tallo", "Raíz"], correctAnswer: "Raíz" },
+            { category: "Plantas: Partes", question: "Además de absorber agua, ¿qué otra función importante cumplen las raíces para la planta?", options: ["Producir flores", "Realizar fotosíntesis", "Sujetar la planta al suelo", "Atraer insectos"], correctAnswer: "Sujetar la planta al suelo" },
+            { category: "Plantas: Partes", question: "¿Cuál es la función principal del tallo en una planta?", options: ["Absorber luz solar", "Sostener las hojas, flores y frutos", "Producir semillas", "Absorber agua"], correctAnswer: "Sostener las hojas, flores y frutos" },
+            { category: "Plantas: Partes", question: "Las hojas son como las 'cocinas' de la planta porque allí ocurre principalmente la...", options: ["Absorción de agua", "Producción de flores", "Fotosíntesis", "Fijación al suelo"], correctAnswer: "Fotosíntesis" },
+            { category: "Plantas: Partes", question: "En muchas plantas, ¿qué parte se encarga de la reproducción y luego se transforma en fruto?", options: ["La raíz", "El tallo", "La hoja", "La flor"], correctAnswer: "La flor" },
+            // Plantas: Clasificación (del cuadro)
+            { category: "Plantas: Clasificación por Tamaño", question: "Si ves una planta muy bajita, con el tallo blandito y verde como el césped, ¿cómo la clasificarías según su tamaño?", options: ["Árbol", "Arbusto", "Hierba"], correctAnswer: "Hierba" },
+            { category: "Plantas: Clasificación por Tamaño", question: "El jazmín tiene varios tallos más duros (leñosos) que salen desde cerca del suelo. ¿En qué grupo lo ponemos según su tamaño?", options: ["Hierba", "Arbusto", "Árbol"], correctAnswer: "Arbusto" },
+            { category: "Plantas: Clasificación por Tamaño", question: "¿Cuál de estos es un ejemplo de ÁRBOL según el cuadro?", options: ["Pasto", "Jacarandá", "Jazmín"], correctAnswer: "Jacarandá" },
+            { category: "Plantas: Clasificación por Ambiente", question: "Las plantas que viven completamente dentro del agua o flotando en ella, como los camalotes, se llaman...", options: ["Aeroterrestres", "Acuáticas", "Anfibias"], correctAnswer: "Acuáticas" },
+            { category: "Plantas: Clasificación por Ambiente", question: "El palo borracho crece fijo en la tierra. ¿Cómo se clasifica según el ambiente donde vive?", options: ["Aeroterrestre", "Acuática", "Anfibia"], correctAnswer: "Aeroterrestre" },
+            { category: "Plantas: Clasificación por Ambiente", question: "Los juncos crecen en lugares muy húmedos, a veces con una parte bajo el agua. ¿A qué grupo pertenecen según el ambiente?", options: ["Aeroterrestres", "Acuáticas", "Anfibias"], correctAnswer: "Anfibias" },
+            { category: "Plantas: Clasificación por Reproducción", question: "El jacarandá y el jazmín tienen algo en común en su forma de reproducirse. ¿Qué es?", options: ["Usan esporas", "Tienen flores y semillas", "Solo tienen semillas (sin flores vistosas)"], correctAnswer: "Tienen flores y semillas" },
+            { category: "Plantas: Clasificación por Reproducción", question: "Los pinos y los cipreses no tienen flores como las rosas, pero sí producen algo para reproducirse. ¿Qué es?", options: ["Esporas", "Semillas (en conos o piñas)", "Flores pequeñas"], correctAnswer: "Semillas (en conos o piñas)" },
+            { category: "Plantas: Clasificación por Reproducción", question: "Si encuentras un helecho en un lugar húmedo, ¿cómo se reproduce principalmente?", options: ["Con flores y semillas", "Con semillas solamente", "Con esporas"], correctAnswer: "Con esporas" },
+            // Otros Autótrofos
+            { category: "Otros Autótrofos", question: "Además de las plantas, ¿qué otros organismos acuáticos fabrican su alimento por fotosíntesis y pueden ser de color verde, rojo o pardo?", options: ["Hongos", "Bacterias", "Algas", "Corales"], correctAnswer: "Algas" },
 
-        // Variables de estado
-        let alarmTime = null;
-        let alarmIntervalId = null;
-        let alarmTriggeredToday = false;
+            // --- 3. ANIMALES ---
+            // Animales: Generales
+            { category: "Animales: Nutrición", question: "Los animales que NO pueden fabrican su propio alimento y deben comer otros seres vivos se llaman...", options: ["Autótrofos", "Productores", "Heterótrofos", "Fotosintéticos"], correctAnswer: "Heterótrofos" },
+            { category: "Animales: Estructura", question: "La principal diferencia para clasificar animales en vertebrados o invertebrados es la presencia o ausencia de:", options: ["Patas", "Alas", "Esqueleto interno", "Pelo"], correctAnswer: "Esqueleto interno" },
+            // Animales: Vertebrados
+            { category: "Vertebrados", question: "Los tiburones son peces especiales porque su esqueleto está hecho de un material flexible llamado...", options: ["Huesos duros", "Aire", "Cartílago", "Escamas"], correctAnswer: "Cartílago" },
+            { category: "Vertebrados", question: "¿Qué tipo de pez tiene esqueleto de cartílago y branquias visibles?", options: ["Pez Payaso", "Pez Óseo", "Tiburón (Pez Cartilaginoso)", "Salamandra"], correctAnswer: "Tiburón (Pez Cartilaginoso)" },
+            { category: "Vertebrados", question: "La mayoría de los peces, como el pez payaso, tienen un esqueleto de huesos y branquias ocultas. Pertenecen al grupo de peces...", options: ["Cartilaginosos", "Óseos", "Pulmonados", "Abisales"], correctAnswer: "Óseos" },
+            { category: "Vertebrados", question: "El pez payaso es un ejemplo de pez óseo. ¿Qué tipo de esqueleto tienen estos peces?", options: ["De cartílago", "No tienen esqueleto", "Formado por huesos", "Externo"], correctAnswer: "Formado por huesos" },
+            { category: "Vertebrados", question: "¿Qué grupo de animales vertebrados, como los sapos, suelen nacer en el agua (renacuajos) y luego viven en la tierra, teniendo piel desnuda y húmeda?", options: ["Peces", "Anfibios", "Reptiles", "Mamíferos"], correctAnswer: "Anfibios" },
+            { category: "Vertebrados", question: "Los sapos y ranas son anfibios. ¿Cómo es su piel?", options: ["Con plumas", "Con escamas duras", "Desnuda y húmeda", "Con pelo"], correctAnswer: "Desnuda y húmeda" },
+            { category: "Vertebrados", question: "Las serpientes y los cocodrilos tienen el cuerpo cubierto de escamas duras y la mayoría nace de huevos. Son:", options: ["Anfibios", "Aves", "Reptiles", "Mamíferos"], correctAnswer: "Reptiles" },
+            { category: "Vertebrados", question: "¿Todos los reptiles, como los cocodrilos y las serpientes, tienen patas?", options: ["Sí, todos tienen cuatro patas", "Sí, todos tienen dos patas", "No, algunos como las serpientes no tienen patas", "No, ninguno tiene patas"], correctAnswer: "No, algunos como las serpientes no tienen patas" },
+            { category: "Vertebrados", question: "¿Qué grupo de animales vertebrados se caracteriza por tener el cuerpo cubierto de plumas, pico y dos alas?", options: ["Mamíferos", "Reptiles", "Anfibios", "Aves"], correctAnswer: "Aves" },
+            { category: "Vertebrados", question: "Las aves nacen de huevos con cáscara dura. ¿Los pingüinos son aves?", options: ["No, son peces", "No, son mamíferos", "Sí, aunque no vuelen", "No, son reptiles"], correctAnswer: "Sí, aunque no vuelen" },
+            { category: "Vertebrados", question: "¿Cuál de estos animales es un mamífero acuático?", options: ["Tiburón", "Pingüino", "Ballena", "Pulpo"], correctAnswer: "Ballena" },
+            { category: "Vertebrados", question: "La característica principal que define a los mamíferos es que las hembras alimentan a sus crías con leche producida en sus:", options: ["Bolsas", "Mamas", "Picos", "Escamas"], correctAnswer: "Mamas" },
+            { category: "Vertebrados", question: "Los osos, monos y seres humanos somos mamíferos terrestres. ¿Cómo nacen la mayoría de las crías de mamíferos?", options: ["De huevos", "Del vientre materno", "De capullos", "Se dividen solos"], correctAnswer: "Del vientre materno" },
+            // Animales: Invertebrados
+            { category: "Invertebrados", question: "Las esponjas de mar, que tienen un cuerpo lleno de poros y viven fijas a las rocas, son animales invertebrados del grupo de los:", options: ["Cnidarios", "Moluscos", "Poríferos", "Anélidos"], correctAnswer: "Poríferos" },
+            { category: "Invertebrados", question: "¿Cómo obtienen su alimento las esponjas de mar (Poríferos)?", options: ["Cazando peces pequeños", "Filtrando el agua a través de sus poros", "Comiendo algas", "Absorbiendo luz solar"], correctAnswer: "Filtrando el agua a través de sus poros" },
+            { category: "Invertebrados", question: "Las medusas y los corales, con corpos blandos y tentáculos, pertenecen al grupo de los...", options: ["Moluscos", "Cnidarios", "Artrópodos", "Equinodermos"], correctAnswer: "Cnidarios" },
+            { category: "Invertebrados", question: "¿Qué estructura usan las medusas y anémonas para capturar su alimento (Cnidarios)?", options: ["Pinzas", "Dientes", "Tentáculos", "Una concha"], correctAnswer: "Tentáculos" },
+            { category: "Invertebrados", question: "Un caracol, que a menudo lleva su casa (concha) a cuestas, es un animal invertebrado del grupo de los...", options: ["Insectos", "Anélidos", "Moluscos", "Crustáceos"], correctAnswer: "Moluscos" },
+            { category: "Invertebrados", question: "¿Cuál de estos animales es un molusco SIN concha externa?", options: ["Almeja", "Caracol", "Mejillón", "Pulpo"], correctAnswer: "Pulpo" },
+            { category: "Invertebrados", question: "Las lombrices de tierra, con su cuerpo blando y dividido en muchos anillos, son ejemplos de:", options: ["Artrópodos", "Moluscos", "Anélidos", "Cnidarios"], correctAnswer: "Anélidos" },
+            { category: "Invertebrados", question: "La característica más visible del cuerpo de una lombriz de tierra (Anélido) es que está formado por muchos...", options: ["Segmentos o anillos", "Tentáculos", "Patas", "Escamas"], correctAnswer: "Segmentos o anillos" },
+            { category: "Invertebrados", question: "¿Cuál es el grupo de animales invertebrados MÁS numeroso, que incluye insectos, arañas y cangrejos, caracterizados por tener un esqueleto externo y patas articuladas?", options: ["Moluscos", "Anélidos", "Equinodermos", "Artrópodos"], correctAnswer: "Artrópodos" },
+            { category: "Invertebrados", question: "La 'armadura' dura que protege el cuerpo de los insectos y cangrejos se llama:", options: ["Piel", "Escamas", "Esqueleto externo (exoesqueleto)", "Caparazón blando"], correctAnswer: "Esqueleto externo (exoesqueleto)" },
+            { category: "Invertebrados", question: "¿Cuántas patas tienen los insectos, como las hormigas o las abejas?", options: ["Cuatro", "Seis", "Ocho", "Muchas"], correctAnswer: "Seis" },
+            { category: "Invertebrados", question: "Las arañas y los escorpiones, que tienen cuatro pares de patas, pertenecen al subgrupo de artrópodos llamado:", options: ["Insectos", "Crustáceos", "Arácnidos", "Miriápodos"], correctAnswer: "Arácnidos" },
+            { category: "Invertebrados", question: "Las estrellas de mar y los erizos de mar, que suelen tener espinas y un cuerpo con simetría radial (como una pizza), son...", options: ["Artrópodos", "Moluscos", "Cnidarios", "Equinodermos"], correctAnswer: "Equinodermos" },
+            { category: "Invertebrados", question: "¿Dónde viven principalmente las estrellas de mar y los erizos (Equinodermos)?", options: ["En la tierra", "En agua dulce (ríos)", "En el mar", "Volando por el aire"], correctAnswer: "En el mar" }
+        ];
 
-        // --- Inicialización de Tone.js ---
-        let synth;
-        let audioInitialized = false;
 
-        async function initializeAudio() {
-            if (!audioInitialized && Tone.context.state !== 'running') {
-                try {
-                    await Tone.start();
-                    console.log("AudioContext iniciado.");
-                    synth = new Tone.Synth().toDestination();
-                    audioInitialized = true;
-                } catch (e) {
-                    console.error("Error al iniciar AudioContext:", e);
-                    alarmStatusEl.textContent = "Error audio";
-                }
-            } else if (Tone.context.state === 'running' && !synth) {
-                 console.log("AudioContext corriendo, creando synth.");
-                 synth = new Tone.Synth().toDestination();
-                 audioInitialized = true;
+        // --- Variables del Juego ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let gameQuestions = []; // Array que contendrá las preguntas actuales (ordenadas, aleatorias o de repaso)
+        let incorrectlyAnsweredQuestions = []; // Para guardar las preguntas falladas
+        let isRandomMode = false; // Variable para controlar el modo de juego
+        let isReviewMode = false; // Variable para controlar si estamos en modo repaso
+
+        // --- Elementos del DOM ---
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const endScreen = document.getElementById('endScreen');
+
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const reviewButton = document.getElementById('reviewButton'); // Botón de repaso
+        const randomModeToggle = document.getElementById('randomModeToggle'); // Interruptor
+
+        const scoreDisplay = document.getElementById('score');
+        const questionNumberDisplay = document.getElementById('questionNumber');
+        const totalQuestionsDisplay = document.getElementById('totalQuestions');
+        const progressBar = document.getElementById('progressBar');
+        const modeInfo = document.getElementById('modeInfo'); // Para indicar si es repaso
+
+        const questionText = document.getElementById('questionText');
+        const questionCategory = document.getElementById('questionCategory');
+        const optionsArea = document.getElementById('optionsArea');
+        const feedbackArea = document.getElementById('feedbackArea');
+
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const finalMessageDisplay = document.getElementById('finalMessage');
+        const endScreenTitle = document.getElementById('endScreenTitle');
+
+
+        // --- Funciones del Juego ---
+
+        // Barajar preguntas (Algoritmo Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
             }
         }
-        document.body.addEventListener('pointerdown', initializeAudio, { once: true });
 
-        // --- Funciones del Reloj ---
-        function formatTwoDigits(num) {
-            return String(num).padStart(2, '0');
-        }
+        function startGame() {
+            // Determinar el modo de juego según el interruptor
+            isRandomMode = randomModeToggle.checked;
+            isReviewMode = false; // Asegurarse de que no estamos en modo repaso
+            incorrectlyAnsweredQuestions = []; // Limpiar preguntas incorrectas anteriores
 
-        function actualizarReloj() {
-            const ahora = new Date();
-            const dia = formatTwoDigits(ahora.getDate());
-            const mes = formatTwoDigits(ahora.getMonth() + 1);
-            const anio = String(ahora.getFullYear()).slice(-2);
-            fechaEl.textContent = `${dia}/${mes}/${anio}`;
-            const horas = formatTwoDigits(ahora.getHours());
-            const minutos = formatTwoDigits(ahora.getMinutes());
-            const segundos = formatTwoDigits(ahora.getSeconds());
-            horaEl.textContent = `${horas}:${minutos}:${segundos}`;
-            checkAlarm(horas, minutos);
-        }
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameScreen.classList.add('fade-in');
+            modeInfo.textContent = ""; // Limpiar indicador de modo
 
-        // --- Funciones de la Alarma ---
-        function checkAlarm(currentHours, currentMinutes) {
-            if (alarmTime) {
-                const currentTimeFormatted = `${currentHours}:${currentMinutes}`;
-                if (currentTimeFormatted === alarmTime && !alarmTriggeredToday) {
-                    triggerAlarm();
-                    alarmTriggeredToday = true;
-                } else if (currentTimeFormatted !== alarmTime) {
-                     alarmTriggeredToday = false;
-                }
+            currentQuestionIndex = 0;
+            score = 0; // Reiniciar puntaje
+            scoreDisplay.textContent = score;
+
+            // Preparar las preguntas según el modo
+            gameQuestions = [...questions]; // Copia el array original (ordenado por categoría)
+            if (isRandomMode) {
+                shuffleArray(gameQuestions); // Barajar si el modo aleatorio está activado
             }
+
+            totalQuestionsDisplay.textContent = gameQuestions.length;
+            loadQuestion();
         }
 
-        async function setAlarm() {
-            await initializeAudio();
-            if (alarmTimeInput.value) {
-                alarmTime = alarmTimeInput.value;
-                alarmStatusEl.textContent = `Alarma: ${alarmTime}`;
-                alarmTimeInput.value = "";
-                alarmTriggeredToday = false;
-                console.log("Alarma establecida:", alarmTime);
+        function startReviewRound() {
+            isReviewMode = true;
+            gameQuestions = [...incorrectlyAnsweredQuestions]; // Usar las preguntas falladas
+            incorrectlyAnsweredQuestions = []; // Limpiar para futuro (o por si se falla en repaso)
+            currentQuestionIndex = 0;
+            // No se reinicia el puntaje en modo repaso
+
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameScreen.classList.add('fade-in');
+            modeInfo.textContent = "(Repaso)"; // Indicar que es ronda de repaso
+            totalQuestionsDisplay.textContent = gameQuestions.length; // Actualizar total para repaso
+            reviewButton.classList.add('hidden'); // Ocultar botón de repaso durante el repaso
+
+            loadQuestion();
+        }
+
+
+        function loadQuestion() {
+            if (currentQuestionIndex < gameQuestions.length) {
+                const currentQuestion = gameQuestions[currentQuestionIndex];
+
+                // Actualizar barra de progreso
+                const progress = ((currentQuestionIndex + 1) / gameQuestions.length) * 100;
+                progressBar.style.width = `${progress}%`;
+
+                questionNumberDisplay.textContent = currentQuestionIndex + 1;
+                questionText.textContent = currentQuestion.question;
+                questionCategory.textContent = `Categoría: ${currentQuestion.category}`;
+
+                optionsArea.innerHTML = ''; // Limpiar opciones anteriores
+                feedbackArea.innerHTML = ''; // Limpiar feedback anterior
+                feedbackArea.className = 'h-10 text-lg font-semibold'; // Resetear clases de feedback
+
+                // Barajar opciones de la pregunta actual (siempre se barajan las opciones)
+                const currentOptions = [...currentQuestion.options];
+                shuffleArray(currentOptions);
+
+                currentOptions.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    // Aplicar estilos base a los botones de opción
+                    button.classList.add(
+                        'option-button', 'w-full', 'font-semibold',
+                        'py-3', 'px-4', 'rounded-lg', 'border-2',
+                        'focus:outline-none', 'focus:ring-2', 'focus:ring-opacity-50',
+                        'fade-in'
+                    );
+                     // Aplicar estilos específicos del tema verde
+                    button.classList.add(
+                         'bg-green-100', 'text-green-800', 'border-green-300',
+                         'hover:bg-green-200', 'hover:border-green-400', 'focus:ring-green-500'
+                    );
+                    button.onclick = () => checkAnswer(option, currentQuestion.correctAnswer, button, currentQuestion);
+                    optionsArea.appendChild(button);
+                });
+
+                 // Añadir animación a la pregunta y opciones
+                document.getElementById('questionArea').classList.remove('fade-in');
+                void document.getElementById('questionArea').offsetWidth; // Truco para reiniciar animación
+                document.getElementById('questionArea').classList.add('fade-in');
+
+                optionsArea.childNodes.forEach((node, index) => {
+                    node.style.animationDelay = `${index * 0.1}s`;
+                    node.classList.remove('fade-in');
+                    void node.offsetWidth;
+                    node.classList.add('fade-in');
+                });
+
             } else {
-                console.warn("Intento de establecer alarma sin hora.");
-                alarmStatusEl.textContent = "Selecciona hora";
-                setTimeout(() => {
-                   if (!alarmTime) alarmStatusEl.textContent = "No hay alarma";
-                }, 3000);
+                // Si estábamos en modo repaso, ahora mostramos la pantalla final definitiva
+                if (isReviewMode) {
+                    isReviewMode = false; // Salir del modo repaso
+                    showEndScreen(true); // Indicar que venimos de un repaso
+                } else {
+                    showEndScreen(false); // Mostrar pantalla final normal
+                }
             }
         }
 
-        function clearAlarm() {
-            alarmTime = null;
-            alarmStatusEl.textContent = "No hay alarma";
-            alarmTriggeredToday = false;
-            alarmTimeInput.value = "";
-            console.log("Alarma limpiada.");
-            stopAlarmSound();
+        // Se añade 'currentQuestionObject' para poder guardarlo si se falla
+        function checkAnswer(selectedOption, correctAnswer, button, currentQuestionObject) {
+            // Deshabilitar todos los botones de opción después de una selección
+            const optionButtons = optionsArea.getElementsByTagName('button');
+            for (let btn of optionButtons) {
+                btn.disabled = true;
+                // Mostrar cuál era la correcta si se eligió mal
+                if (btn.textContent === correctAnswer) {
+                    btn.classList.add('correct-answer');
+                     // Remover clases base para evitar conflictos
+                    btn.classList.remove('bg-green-100', 'text-green-800', 'border-green-300', 'hover:bg-green-200', 'hover:border-green-400');
+                }
+            }
+
+            if (selectedOption === correctAnswer) {
+                 // Solo sumar puntos si NO estamos en modo repaso
+                if (!isReviewMode) {
+                    score += 10;
+                    scoreDisplay.textContent = score;
+                }
+                button.classList.add('correct-answer');
+                 // Remover clases base para evitar conflictos
+                button.classList.remove('bg-green-100', 'text-green-800', 'border-green-300', 'hover:bg-green-200', 'hover:border-green-400');
+                feedbackArea.innerHTML = `
+                    <div class="flex items-center justify-center text-green-700">
+                        <svg class="feedback-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        ¡Correcto! ${!isReviewMode ? '+10 puntos' : ''}
+                    </div>`;
+            } else {
+                // Si se falla y NO estamos en modo repaso, guardar la pregunta
+                if (!isReviewMode) {
+                    // Evitar duplicados si se juega varias veces y se falla la misma
+                    if (!incorrectlyAnsweredQuestions.some(q => q.question === currentQuestionObject.question)) {
+                         incorrectlyAnsweredQuestions.push(currentQuestionObject);
+                    }
+                }
+                button.classList.add('incorrect-answer');
+                 // Remover clases base para evitar conflictos
+                 button.classList.remove('bg-green-100', 'text-green-800', 'border-green-300', 'hover:bg-green-200', 'hover:border-green-400');
+                feedbackArea.innerHTML = `
+                    <div class="flex items-center justify-center text-red-700">
+                        <svg class="feedback-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        ¡Ups! La respuesta era ${correctAnswer}.
+                    </div>`;
+            }
+
+            currentQuestionIndex++;
+            // Esperar un poco más si la respuesta fue incorrecta para que dé tiempo a leer
+            const delay = selectedOption === correctAnswer ? 1500 : 2500;
+            setTimeout(loadQuestion, delay);
         }
 
-        // --- Funciones del Modal y Sonido ---
-        function triggerAlarm() {
-            showAlarmModal();
-            playAlarmSound();
-        }
+        // 'fromReview' indica si llegamos aquí después de la ronda de repaso
+        function showEndScreen(fromReview) {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endScreen.classList.add('fade-in');
+            modeInfo.textContent = ""; // Limpiar indicador de modo
 
-        function showAlarmModal() {
-            alarmModal.classList.add('active');
-        }
+            finalScoreDisplay.textContent = score; // Mostrar siempre el puntaje final acumulado
+            let message = "";
 
-        function hideAlarmModal() {
-            alarmModal.classList.remove('active');
-            stopAlarmSound();
-        }
+            // Determinar mensaje final basado en el puntaje
+            if (score >= questions.length * 10 * 0.8) { // 80% o más del total original
+                message = "¡Eres un Genio de la Naturaleza! 🌳 ¡Sabes muchísimo!";
+                endScreenTitle.textContent = "¡Felicitaciones! 🎉";
+            } else if (score >= questions.length * 10 * 0.5) { // 50% o más
+                message = "¡Muy bien! Eres un gran explorador del mundo vivo. 🌱";
+                 endScreenTitle.textContent = "¡Buen Trabajo! 👍";
+            } else {
+                message = "¡Buen intento! Sigue aprendiendo y serás un experto. 🦋";
+                 endScreenTitle.textContent = "¡Aventura Completada!";
+            }
+            finalMessageDisplay.textContent = message;
 
-        function playAlarmSound() {
-            if (synth && audioInitialized && Tone.context.state === 'running') {
-                try {
-                    const now = Tone.now();
-                    synth.triggerAttackRelease("C4", "8n", now);
-                    synth.triggerAttackRelease("E4", "8n", now + 0.25);
-                    synth.triggerAttackRelease("G4", "8n", now + 0.5);
-                    console.log("Reproduciendo sonido...");
-                } catch (e) { console.error("Error sonido:", e); }
-            } else { console.warn("Audio no listo. Estado:", Tone.context.state); }
-        }
-
-        function stopAlarmSound() {
-             if (synth && typeof synth.triggerRelease === 'function') {
-                 try { synth.triggerRelease(); console.log("Sonido detenido."); }
-                 catch(e) { console.error("Error detener sonido:", e); }
-             }
+            // Mostrar el botón de repaso SOLO si hubo errores Y NO venimos de un repaso
+            if (incorrectlyAnsweredQuestions.length > 0 && !fromReview) {
+                reviewButton.classList.remove('hidden');
+            } else {
+                reviewButton.classList.add('hidden');
+            }
         }
 
         // --- Event Listeners ---
-        setAlarmBtn.addEventListener('click', setAlarm);
-        clearAlarmBtn.addEventListener('click', clearAlarm);
-        modalCloseBtn.addEventListener('click', hideAlarmModal);
-        alarmModal.addEventListener('click', (event) => {
-            if (event.target === alarmModal) { hideAlarmModal(); }
-        });
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        reviewButton.addEventListener('click', startReviewRound); // Listener para el botón de repaso
 
-        // --- Inicialización ---
-        alarmIntervalId = setInterval(actualizarReloj, 1000);
-        actualizarReloj();
+        // Iniciar la pantalla de bienvenida
+        startScreen.classList.remove('hidden');
 
     </script>
-
 </body>
 </html>
